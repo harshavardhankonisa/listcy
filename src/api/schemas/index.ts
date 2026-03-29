@@ -1,2 +1,5 @@
 export * from './auth.schema'
 export * from './users.schema'
+export * from './lists.schema'
+export * from './collections.schema'
+export * from './tags.schema'

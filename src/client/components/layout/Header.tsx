@@ -65,7 +65,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
             alt="Listcy"
             width={55}
             height={27}
-            className="w-13.75 h-6.75"
+            className="w-13.75 h-6.75 -mb-1"
           />
         </Link>
       </div>
