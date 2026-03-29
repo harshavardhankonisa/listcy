@@ -1,0 +1,11 @@
+services:
+  app:
+    container_name: listcy
+    build:
+      context: ../../
+      dockerfile: infra/docker/Dockerfile.production
+    ports:
+      - '3000:3000'
+    env_file:
+      - ../env/.env.production
+    restart: unless-stopped

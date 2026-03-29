@@ -1,0 +1,19 @@
+# Ignore artifacts:
+build
+coverage
+
+# dependencies
+node_modules
+package-lock.json
+
+# next.js
+.next
+out
+
+# misc
+.DS_Store
+*.pem
+
+# auto-generated
+next-env.d.ts
+src/api/schemas/auth.schema.ts

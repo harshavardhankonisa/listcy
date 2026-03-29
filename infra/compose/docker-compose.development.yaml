@@ -1,0 +1,39 @@
+services:
+  postgres:
+    image: postgres:18-alpine
+    container_name: listcy-db
+    restart: unless-stopped
+    ports:
+      - '5432:5432'
+    environment:
+      POSTGRES_USER: listcy
+      POSTGRES_PASSWORD: listcy
+      POSTGRES_DB: listcydb
+    volumes:
+      - listcy_pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U listcy']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  app:
+    container_name: listcy
+    build:
+      context: ../../
+      dockerfile: infra/docker/Dockerfile.development
+    ports:
+      - '3000:3000'
+      - '4983:4983'
+    volumes:
+      - ../../:/app
+      - /app/node_modules
+      - /app/.next
+    env_file:
+      - ../env/.env.development
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+volumes:
+  listcy_pgdata:
