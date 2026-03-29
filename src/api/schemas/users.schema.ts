@@ -1,6 +1,7 @@
 import { relations } from 'drizzle-orm'
 import { pgTable, text, timestamp, boolean, index } from 'drizzle-orm/pg-core'
 import { user } from './auth.schema'
+import type { Theme, Locale, Timezone } from '@/constants/user'
 
 export const userProfile = pgTable(
   'user_profile',
@@ -14,8 +15,8 @@ export const userProfile = pgTable(
     bio: text('bio'),
     phone: text('phone'),
     dateOfBirth: timestamp('date_of_birth'),
-    timezone: text('timezone'),
-    locale: text('locale'),
+    timezone: text('timezone').$type<Timezone>(),
+    locale: text('locale').$type<Locale>(),
     avatarUrl: text('avatar_url'),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')
@@ -41,7 +42,9 @@ export const userSettings = pgTable(
       .notNull()
       .unique()
       .references(() => user.id, { onDelete: 'cascade' }),
-    theme: text('theme').default('system').notNull(),
+    theme: text('theme').$type<Theme>().default('system').notNull(),
+    locale: text('locale').$type<Locale>().default('en').notNull(),
+    timezone: text('timezone').$type<Timezone>().default('UTC').notNull(),
     emailNotifications: boolean('email_notifications').default(true).notNull(),
     pushNotifications: boolean('push_notifications').default(true).notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
