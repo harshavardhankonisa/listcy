@@ -1,3 +1,4 @@
+name: listcy
 services:
   postgres:
     image: postgres:18-alpine
@@ -12,13 +13,13 @@ services:
     volumes:
       - listcy_pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U listcy']
+      test: ['CMD-SHELL', 'pg_isready -U listcy -d listcydb']
       interval: 5s
       timeout: 5s
       retries: 5
 
   app:
-    container_name: listcy
+    container_name: listcy-main
     build:
       context: ../../
       dockerfile: infra/docker/Dockerfile.development

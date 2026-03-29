@@ -1,6 +1,7 @@
+name: listcy
 services:
   app:
-    container_name: listcy
+    container_name: listcy-main
     build:
       context: ../../
       dockerfile: infra/docker/Dockerfile.production
