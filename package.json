@@ -16,9 +16,9 @@
     "lint:fix": "docker exec listcy-main npx eslint --fix .",
     "format": "docker exec listcy-main npx prettier --write .",
     "format:all": "docker exec listcy-main npx eslint --fix . && docker exec listcy-main npx prettier --write .",
-    "db:push": "docker exec listcy-main npx drizzle-kit push",
-    "db:generate": "docker exec listcy-main npx drizzle-kit generate",
-    "db:migrate": "docker exec listcy-main npx drizzle-kit migrate",
+    "db:push": "docker exec -it listcy-main npx drizzle-kit push",
+    "db:generate": "docker exec -it listcy-main npx drizzle-kit generate",
+    "db:migrate": "docker exec -it listcy-main npx drizzle-kit migrate",
     "db:studio": "docker exec -it listcy-main npx drizzle-kit studio --host 0.0.0.0",
     "auth:schema": "docker exec listcy-main npx auth@latest generate --config src/api/config/auth.ts --output src/api/schemas/auth.schema.ts --yes",
     "prepare": "husky"

@@ -25,13 +25,29 @@ services:
       dockerfile: infra/docker/Dockerfile.development
     ports:
       - '3000:3000'
-      - '4983:4983'
     volumes:
       - ../../:/app
       - /app/node_modules
       - /app/.next
     env_file:
       - ../env/.env.development
+    depends_on:
+      postgres:
+        condition: service_healthy
+
+  studio:
+    container_name: listcy-studio
+    build:
+      context: ../../
+      dockerfile: infra/docker/Dockerfile.development
+    ports:
+      - '4983:4983'
+    volumes:
+      - ../../:/app
+      - /app/node_modules
+    env_file:
+      - ../env/.env.development
+    command: npx drizzle-kit studio --host 0.0.0.0
     depends_on:
       postgres:
         condition: service_healthy
