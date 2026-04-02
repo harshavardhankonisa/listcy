@@ -1,10 +1,10 @@
-import type { Metadata } from "next";
+import type { Metadata } from 'next'
 
 export const metadata: Metadata = {
-  title: "About Us",
+  title: 'About Us',
   description:
-    "Learn about Listcy — the platform where lists are curated by you, and curated for you.",
-};
+    'Learn about Listcy — the platform where lists are curated by you, and curated for you.',
+}
 
 export default function AboutUs() {
   return (
@@ -31,8 +31,8 @@ export default function AboutUs() {
           <p className="text-lg leading-8 text-zinc-600 dark:text-zinc-400">
             We believe the best recommendations come from real people — not
             algorithms. Listcy gives everyone a platform to curate and share
-            lists on any topic, and to discover lists curated by others who share
-            their interests.
+            lists on any topic, and to discover lists curated by others who
+            share their interests.
           </p>
         </section>
 
@@ -47,9 +47,7 @@ export default function AboutUs() {
                 1.
               </span>
               <span>
-                <strong className="text-black dark:text-zinc-50">
-                  Create
-                </strong>{" "}
+                <strong className="text-black dark:text-zinc-50">Create</strong>{' '}
                 — Build lists on any topic you&apos;re passionate about.
               </span>
             </li>
@@ -58,7 +56,7 @@ export default function AboutUs() {
                 2.
               </span>
               <span>
-                <strong className="text-black dark:text-zinc-50">Share</strong>{" "}
+                <strong className="text-black dark:text-zinc-50">Share</strong>{' '}
                 — Publish your lists for others to explore and follow.
               </span>
             </li>
@@ -69,7 +67,7 @@ export default function AboutUs() {
               <span>
                 <strong className="text-black dark:text-zinc-50">
                   Discover
-                </strong>{" "}
+                </strong>{' '}
                 — Browse lists from the community and find your next favourite
                 thing.
               </span>
@@ -120,5 +118,5 @@ export default function AboutUs() {
         </section>
       </main>
     </div>
-  );
+  )
 }
