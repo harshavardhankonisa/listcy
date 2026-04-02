@@ -2,7 +2,7 @@ import { eq, desc, and } from 'drizzle-orm'
 import { db } from '@/api/config/db'
 import { list, listItem } from '@/api/schemas/lists.schema'
 import { listToTag } from '@/api/schemas/tags.schema'
-import type { Visibility } from '@/api/schemas/lists.schema'
+import type { Visibility } from '@/constants/list'
 
 export async function findById(id: string) {
   const rows = await db.select().from(list).where(eq(list.id, id)).limit(1)
@@ -65,6 +65,15 @@ export async function remove(id: string, userId: string) {
     .delete(list)
     .where(and(eq(list.id, id), eq(list.userId, userId)))
     .returning()
+  return rows[0] ?? null
+}
+
+export async function findItemById(id: string) {
+  const rows = await db
+    .select()
+    .from(listItem)
+    .where(eq(listItem.id, id))
+    .limit(1)
   return rows[0] ?? null
 }
 

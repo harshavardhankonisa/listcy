@@ -2,7 +2,7 @@ import { eq, desc, and } from 'drizzle-orm'
 import { db } from '@/api/config/db'
 import { collection, collectionToList } from '@/api/schemas/collections.schema'
 import { collectionToTag } from '@/api/schemas/tags.schema'
-import type { Visibility } from '@/api/schemas/lists.schema'
+import type { Visibility } from '@/constants/list'
 
 export async function findById(id: string) {
   const rows = await db

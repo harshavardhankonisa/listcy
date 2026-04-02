@@ -1,6 +1,6 @@
 import * as listRepo from '@/api/repositories/list.repository'
 import * as tagRepo from '@/api/repositories/tag.repository'
-import type { Visibility } from '@/api/schemas/lists.schema'
+import type { Visibility } from '@/constants/list'
 
 export async function getListById(id: string, requesterId?: string | null) {
   const found = await listRepo.findById(id)
@@ -99,10 +99,22 @@ export async function updateItem(
     position: number
   }>
 ) {
+  const item = await listRepo.findItemById(itemId)
+  if (!item) return null
+
+  const parentList = await listRepo.findById(item.listId)
+  if (!parentList || parentList.userId !== userId) return null
+
   return listRepo.updateItem(itemId, data)
 }
 
-export async function deleteItem(itemId: string) {
+export async function deleteItem(itemId: string, userId: string) {
+  const item = await listRepo.findItemById(itemId)
+  if (!item) return null
+
+  const parentList = await listRepo.findById(item.listId)
+  if (!parentList || parentList.userId !== userId) return null
+
   return listRepo.removeItem(itemId)
 }
 

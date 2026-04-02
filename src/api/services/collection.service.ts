@@ -1,7 +1,7 @@
 import * as collectionRepo from '@/api/repositories/collection.repository'
 import * as listRepo from '@/api/repositories/list.repository'
 import * as tagRepo from '@/api/repositories/tag.repository'
-import type { Visibility } from '@/api/schemas/lists.schema'
+import type { Visibility } from '@/constants/list'
 
 export async function getCollectionById(
   id: string,
