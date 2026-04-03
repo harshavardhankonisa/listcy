@@ -7,7 +7,7 @@ import {
   useState,
   useCallback,
 } from 'react'
-import type { Theme } from '@/constants/user'
+import { THEMES, type Theme } from '@/constants/user'
 
 interface ThemeContextValue {
   theme: Theme
@@ -23,6 +23,10 @@ export function useTheme() {
   return useContext(ThemeContext)
 }
 
+function isValidTheme(value: string): value is Theme {
+  return (THEMES as readonly string[]).includes(value)
+}
+
 function applyThemeClass(theme: Theme) {
   const root = document.documentElement
 
@@ -36,19 +40,11 @@ function applyThemeClass(theme: Theme) {
   }
 }
 
-export function ThemeProvider({
-  children,
-  initialTheme = 'system',
-}: {
-  children: React.ReactNode
-  initialTheme?: Theme
-}) {
+export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const [theme, setThemeState] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return initialTheme
-    const stored = localStorage.getItem('listcy-theme') as Theme | null
-    return stored && ['light', 'dark', 'system'].includes(stored)
-      ? stored
-      : initialTheme
+    if (typeof window === 'undefined') return 'system'
+    const stored = localStorage.getItem('listcy-theme')
+    return stored && isValidTheme(stored) ? stored : 'system'
   })
 
   const setTheme = useCallback((newTheme: Theme) => {
@@ -56,11 +52,6 @@ export function ThemeProvider({
     localStorage.setItem('listcy-theme', newTheme)
     applyThemeClass(newTheme)
   }, [])
-
-  // Apply theme class on mount
-  useEffect(() => {
-    applyThemeClass(theme)
-  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // Listen for system theme changes when using 'system'
   useEffect(() => {
@@ -71,6 +62,19 @@ export function ThemeProvider({
     mq.addEventListener('change', handler)
     return () => mq.removeEventListener('change', handler)
   }, [theme])
+
+  // Sync theme across browser tabs via storage event
+  useEffect(() => {
+    const handler = (e: StorageEvent) => {
+      if (e.key !== 'listcy-theme' || !e.newValue) return
+      if (isValidTheme(e.newValue)) {
+        setThemeState(e.newValue)
+        applyThemeClass(e.newValue)
+      }
+    }
+    window.addEventListener('storage', handler)
+    return () => window.removeEventListener('storage', handler)
+  }, [])
 
   return (
     <ThemeContext.Provider value={{ theme, setTheme }}>
