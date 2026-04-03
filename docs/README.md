@@ -11,6 +11,7 @@
 | [API Reference](./api/)                         | Route-by-route reference for all endpoints                   |
 | [Development](./development/getting-started.md) | Local setup, Docker workflow                                 |
 | [Database](./development/database.md)           | Drizzle ORM, migrations, Drizzle Studio                      |
+| [Commits](./development/commits.md)             | Commit message convention and types                          |
 | [Deployment](./deployment/aws.md)               | Docker build, AWS, environment variables                     |
 | [Security](./security/rules.md)                 | Security checklist and rules                                 |
 | [Features](./features/)                         | Feature specs and product decisions                          |
