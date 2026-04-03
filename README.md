@@ -1,36 +1,90 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Listcy
 
-## Getting Started
+> YouTube for lists. Create ordered lists, group them into collections, and tag everything.
 
-First, run the development server:
+Built with **Next.js 16**, **Drizzle ORM**, **Better Auth**, **PostgreSQL**, **Tailwind CSS v4**. Runs entirely in Docker.
+
+---
+
+## Quick Start
+
+**Prerequisites:** Docker, Docker Compose, Node.js ≥ 24, npm ≥ 11
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# 1. Copy the env template and fill in your values
+cp infra/env/.env.development.example infra/env/.env.development
+
+# 2. Start everything (app + postgres + drizzle studio)
+make up
+
+# 3. Push the schema to the DB (first time only)
+npm run db:push
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+App → http://localhost:3000
+Drizzle Studio → http://localhost:4983
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+---
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Development Commands
 
-## Learn More
+| Command               | What it does                 |
+| --------------------- | ---------------------------- |
+| `make up`             | Start all services           |
+| `make down`           | Stop and remove containers   |
+| `make stop`           | Stop containers, keep data   |
+| `make logs`           | Tail all logs                |
+| `make logs-app`       | Tail app logs only           |
+| `make shell`          | Shell into the app container |
+| `make shell-db`       | psql into the database       |
+| `npm run db:push`     | Push schema changes (dev)    |
+| `npm run db:generate` | Generate migration files     |
+| `npm run db:migrate`  | Run migrations (prod)        |
+| `npm run lint`        | Run ESLint                   |
+| `npm run format`      | Run Prettier                 |
 
-To learn more about Next.js, take a look at the following resources:
+---
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Tech Stack
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+| Layer                   | Technology                                  |
+| ----------------------- | ------------------------------------------- |
+| Framework               | Next.js 16 (App Router)                     |
+| Language                | TypeScript 5                                |
+| Database                | PostgreSQL 18                               |
+| ORM                     | Drizzle ORM                                 |
+| Auth                    | Better Auth (email/password + GitHub OAuth) |
+| Styling                 | Tailwind CSS v4                             |
+| Caching / Rate-limiting | Redis                                       |
+| File Storage            | AWS S3                                      |
+| Runtime                 | Node.js ≥ 24                                |
+| Infrastructure          | Docker (dev + prod)                         |
 
-## Deploy on Vercel
+---
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Project Structure
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+```
+src/
+├── api/          # Server-only backend (controllers, services, repositories, schemas)
+├── app/          # Next.js App Router (pages + API route handlers)
+├── client/       # Client-side React components and hooks
+└── constants/    # Shared constants and derived types (safe for server + client)
+```
+
+See [docs/architecture/overview.md](docs/architecture/overview.md) for the full layered architecture.
+
+---
+
+## Docs
+
+|                                                        |                                                    |
+| ------------------------------------------------------ | -------------------------------------------------- |
+| [Architecture](docs/architecture/overview.md)          | Layered backend, import rules                      |
+| [Conventions](docs/architecture/conventions.md)        | File naming, schema barrel, server/client boundary |
+| [API Reference](docs/api/)                             | All endpoints documented                           |
+| [Getting Started](docs/development/getting-started.md) | Detailed local setup                               |
+| [Database](docs/development/database.md)               | Drizzle, migrations, Studio                        |
+| [Commits](docs/development/commits.md)                 | Commit message convention                          |
+| [Deployment](docs/deployment/aws.md)                   | Docker build + AWS                                 |
+| [Security](docs/security/rules.md)                     | Security rules and checklist                       |
