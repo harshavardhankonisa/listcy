@@ -98,6 +98,27 @@ export function Header({ onMenuToggle }: HeaderProps) {
 
       {/* Right: Auth area */}
       <div className="flex items-center gap-2">
+        {user && (
+          <Link
+            href="/lists/new"
+            className="hidden items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 sm:flex dark:bg-blue-500 dark:hover:bg-blue-600"
+          >
+            <svg
+              className="h-4 w-4"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth={2.5}
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M12 4.5v15m7.5-7.5h-15"
+              />
+            </svg>
+            Create
+          </Link>
+        )}
         {/* Mobile search icon */}
         <button className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-zinc-100 sm:hidden dark:hover:bg-zinc-800">
           <svg

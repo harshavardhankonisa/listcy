@@ -1,7 +1,5 @@
-import { NextResponse } from 'next/server'
-import * as tagService from '@/api/services/tag.service'
+import * as tagController from '@/api/controllers/tag.controller'
 
 export async function GET() {
-  const tags = await tagService.getAllTags()
-  return NextResponse.json({ tags })
+  return tagController.getTags()
 }

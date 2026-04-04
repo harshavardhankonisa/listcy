@@ -2,7 +2,7 @@ import { eq, desc, and } from 'drizzle-orm'
 import { db } from '@/api/config/db'
 import { list, listItem } from '@/api/schemas/lists.schema'
 import { listToTag } from '@/api/schemas/tags.schema'
-import type { Visibility } from '@/constants/list'
+import type { Visibility, ListType } from '@/constants/list'
 
 export async function findById(id: string) {
   const rows = await db.select().from(list).where(eq(list.id, id)).limit(1)
@@ -33,6 +33,7 @@ export async function create(data: {
   description?: string | null
   coverImage?: string | null
   visibility?: Visibility
+  type?: ListType
 }) {
   const id = crypto.randomUUID()
   const rows = await db

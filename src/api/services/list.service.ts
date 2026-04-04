@@ -1,6 +1,6 @@
 import * as listRepo from '@/api/repositories/list.repository'
 import * as tagRepo from '@/api/repositories/tag.repository'
-import type { Visibility } from '@/constants/list'
+import type { Visibility, ListType } from '@/constants/list'
 
 export async function getListById(id: string, requesterId?: string | null) {
   const found = await listRepo.findById(id)
@@ -35,6 +35,7 @@ export async function createList(
     description?: string | null
     coverImage?: string | null
     visibility?: Visibility
+    type?: ListType
     tags?: string[]
   }
 ) {

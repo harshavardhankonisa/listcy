@@ -2,12 +2,21 @@
 
 import {
   createContext,
+  useCallback,
   useContext,
   useEffect,
+  useLayoutEffect,
   useState,
-  useCallback,
 } from 'react'
 import { THEMES, type Theme } from '@/constants/user'
+
+// useLayoutEffect fires synchronously after React mutates the DOM but before
+// the browser paints — that's the only window where we can re-apply the dark
+// class after React's hydration has overwritten it, without a visible flash.
+// On the server it never runs either way, but useLayoutEffect emits a warning
+// there while useEffect does not, so we swap it out server-side.
+const useIsomorphicLayoutEffect =
+  typeof window !== 'undefined' ? useLayoutEffect : useEffect
 
 interface ThemeContextValue {
   theme: Theme
@@ -52,6 +61,14 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('listcy-theme', newTheme)
     applyThemeClass(newTheme)
   }, [])
+
+  // This is the actual FOUC fix. React's hydration reconciles <html> and
+  // overwrites its className, silently stripping the 'dark' class the
+  // beforeInteractive script set. useLayoutEffect runs after that DOM mutation
+  // but before the browser paints, so we put the class back in time.
+  useIsomorphicLayoutEffect(() => {
+    applyThemeClass(theme)
+  }, [theme])
 
   // Listen for system theme changes when using 'system'
   useEffect(() => {

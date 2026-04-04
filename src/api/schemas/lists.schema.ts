@@ -3,7 +3,7 @@ import { pgTable, text, timestamp, integer, index } from 'drizzle-orm/pg-core'
 import { user } from './auth.schema'
 import { listToTag } from './tags.schema'
 import { collectionToList } from './collections.schema'
-import { Visibility } from '@/constants/list'
+import type { Visibility, ListType } from '@/constants/list'
 
 export const list = pgTable(
   'list',
@@ -19,6 +19,7 @@ export const list = pgTable(
       .$type<Visibility>()
       .default('public')
       .notNull(),
+    type: text('type').$type<ListType>().default('general').notNull(),
     createdAt: timestamp('created_at').defaultNow().notNull(),
     updatedAt: timestamp('updated_at')
       .defaultNow()
