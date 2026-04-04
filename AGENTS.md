@@ -12,9 +12,10 @@ This version has breaking changes — APIs, conventions, and file structure may 
 
 ## Project Overview
 
-Listcy is a list-curation platform ("YouTube for lists"). Users create Lists (ordered items),
-group them into Collections, and tag both with Tags. Built with Next.js 16, Drizzle ORM,
-Better Auth, PostgreSQL, and Tailwind CSS v4. Deployed on AWS as a Docker monorepo.
+Listcy is a curated platform for creating, discovering, and sharing structured lists, turning
+rankings, resources, and collections into searchable, high-value content assets. Users create
+Lists (ordered items), group them into Collections, and tag both with Tags. Built with Next.js 16,
+Drizzle ORM, Better Auth, PostgreSQL, and Tailwind CSS v4. Deployed on AWS as a Docker monorepo.
 
 ---
 

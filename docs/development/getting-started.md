@@ -6,8 +6,8 @@
 | -------------- | ------------------------------------ |
 | Docker         | Latest                               |
 | Docker Compose | Latest (bundled with Docker Desktop) |
-| Node.js        | ≥ 24.13.0                            |
-| npm            | ≥ 11.6.2                             |
+
+No local Node.js or npm required — everything runs inside the container.
 
 ---
 
@@ -43,7 +43,7 @@ This starts three containers:
 **4. Push the schema (first time only)**
 
 ```bash
-npm run db:push
+make db-push
 ```
 
 **5. Open the app**
@@ -67,21 +67,33 @@ make shell-db    # psql into the DB
 
 ---
 
-## Useful npm Scripts
+## All Commands
 
-All scripts that run inside the container use `docker exec` — **make sure the containers are running** before calling them.
+All commands run inside Docker — **make sure containers are running** (`make up`) before using them.
 
-```bash
-npm run lint         # ESLint
-npm run lint:fix     # ESLint with auto-fix
-npm run format       # Prettier
-npm run format:all   # ESLint + Prettier together
-npm run db:push      # Push schema to DB (dev)
-npm run db:generate  # Generate migration files
-npm run db:migrate   # Run migrations (prod)
-npm run db:studio    # Start Drizzle Studio
-npm run auth:schema  # Regenerate Better Auth schema file
-```
+Use `make` or `npm run` — they are identical.
+
+| `make`             | `npm run`             | What it does                       |
+| ------------------ | --------------------- | ---------------------------------- |
+| `make up`          | `npm run up`          | Build and start all dev services   |
+| `make stop`        | `npm run stop`        | Stop containers, keep data         |
+| `make down`        | `npm run down`        | Stop and remove containers         |
+| `make reset`       | `npm run reset`       | Tear down including volumes        |
+| `make prod`        | `npm run prod:up`     | Start production build (detached)  |
+| `make prod-stop`   | `npm run prod:stop`   | Stop production containers         |
+| `make logs`        | —                     | Tail all logs                      |
+| `make logs-app`    | —                     | Tail app logs only                 |
+| `make shell`       | —                     | Shell into the app container       |
+| `make shell-db`    | —                     | psql into the database             |
+| `make lint`        | `npm run lint`        | Run ESLint                         |
+| `make lint-fix`    | `npm run lint:fix`    | ESLint with auto-fix               |
+| `make format`      | `npm run format`      | Run Prettier                       |
+| `make format-all`  | `npm run format:all`  | ESLint + Prettier                  |
+| `make db-push`     | `npm run db:push`     | Push schema changes to DB (dev)    |
+| `make db-generate` | `npm run db:generate` | Generate migration files           |
+| `make db-migrate`  | `npm run db:migrate`  | Run migrations (prod)              |
+| `make db-studio`   | `npm run db:studio`   | Open Drizzle Studio                |
+| `make auth-schema` | `npm run auth:schema` | Regenerate Better Auth schema file |
 
 ---
 
