@@ -1,18 +1,21 @@
 import * as userRepo from '@/api/repositories/user.repository'
+import { generateUniqueSlug, usernameFromEmail } from '@/api/utils/slug'
 import type { Theme, Locale, Timezone } from '@/constants/user'
 
-/**
- * Profile
- * @param userId
- * @returns
- */
+// ── Profile ─────────────────────────────────────────────────────────────
+
 export async function getProfile(userId: string) {
   return userRepo.findProfileByUserId(userId)
+}
+
+export async function getPublicProfile(username: string) {
+  return userRepo.findProfileByUsername(username)
 }
 
 export async function upsertProfile(
   userId: string,
   data: {
+    username?: string | null
     displayName?: string | null
     bio?: string | null
     phone?: string | null
@@ -25,14 +28,14 @@ export async function upsertProfile(
   if (existing) {
     return userRepo.updateProfile(userId, data)
   }
-  return userRepo.createProfile(userId, { displayName: data.displayName })
+  return userRepo.createProfile(userId, {
+    displayName: data.displayName,
+    username: data.username,
+  })
 }
 
-/**
- * Settings
- * @param userId
- * @returns
- */
+// ── Settings ────────────────────────────────────────────────────────────
+
 export async function getSettings(userId: string) {
   return userRepo.findSettingsByUserId(userId)
 }
@@ -54,14 +57,18 @@ export async function upsertSettings(
   return userRepo.createSettings(userId)
 }
 
-/**
- * Bootstrap user related details when user is created.
- * @param userId
- * @param name
- */
-export async function bootstrapUserData(userId: string, name?: string | null) {
+// ── Bootstrap ───────────────────────────────────────────────────────────
+
+export async function bootstrapUserData(
+  userId: string,
+  name?: string | null,
+  email?: string | null
+) {
+  const base = email ? usernameFromEmail(email) : (name ?? 'user')
+  const username = await generateUniqueSlug(base, userRepo.usernameExists)
+
   await Promise.all([
-    userRepo.createProfile(userId, { displayName: name ?? null }),
+    userRepo.createProfile(userId, { displayName: name ?? null, username }),
     userRepo.createSettings(userId),
   ])
 }

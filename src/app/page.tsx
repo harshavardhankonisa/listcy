@@ -32,6 +32,7 @@ export default async function Home() {
             <ListCard
               key={l.id}
               id={l.id}
+              slug={l.slug}
               title={l.title}
               author="User"
               itemCount={0}

@@ -100,7 +100,7 @@ export function Header({ onMenuToggle }: HeaderProps) {
       <div className="flex items-center gap-2">
         {user && (
           <Link
-            href="/lists/new"
+            href="/dashboard/lists/new"
             className="hidden items-center gap-1.5 rounded-lg bg-blue-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-blue-700 sm:flex dark:bg-blue-500 dark:hover:bg-blue-600"
           >
             <svg
@@ -181,6 +181,13 @@ export function Header({ onMenuToggle }: HeaderProps) {
                     {user.email}
                   </p>
                 </div>
+                <Link
+                  href="/dashboard"
+                  onClick={() => setMenuOpen(false)}
+                  className="flex w-full items-center gap-2 px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                >
+                  Dashboard
+                </Link>
                 <Link
                   href="/settings"
                   onClick={() => setMenuOpen(false)}

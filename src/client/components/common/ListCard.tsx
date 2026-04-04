@@ -3,6 +3,7 @@ import Link from 'next/link'
 
 export interface ListCardProps {
   id: string
+  slug: string
   title: string
   author: string
   itemCount: number
@@ -12,7 +13,7 @@ export interface ListCardProps {
 }
 
 export function ListCard({
-  id,
+  slug,
   title,
   author,
   itemCount,
@@ -21,7 +22,7 @@ export function ListCard({
   coverImage,
 }: ListCardProps) {
   return (
-    <Link href={`/lists/${id}`} className="group cursor-pointer">
+    <Link href={`/lists/${slug}`} className="group cursor-pointer">
       {/* Thumbnail */}
       <div className="relative mb-3 aspect-video w-full overflow-hidden rounded-xl bg-zinc-200 dark:bg-zinc-800">
         {coverImage ? (

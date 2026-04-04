@@ -1,8 +1,8 @@
 import * as listController from '@/api/controllers/list.controller'
 
-type Params = { params: Promise<{ id: string }> }
+type Params = { params: Promise<{ slug: string }> }
 
 export async function POST(request: Request, { params }: Params) {
-  const { id } = await params
-  return listController.addItem(request, id)
+  const { slug } = await params
+  return listController.addItemBySlug(request, slug)
 }

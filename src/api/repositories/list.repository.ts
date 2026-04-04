@@ -1,4 +1,4 @@
-import { eq, desc, and } from 'drizzle-orm'
+import { eq, desc, and, count, sql } from 'drizzle-orm'
 import { db } from '@/api/config/db'
 import { list, listItem } from '@/api/schemas/lists.schema'
 import { listToTag } from '@/api/schemas/tags.schema'
@@ -9,12 +9,65 @@ export async function findById(id: string) {
   return rows[0] ?? null
 }
 
+export async function findBySlug(slug: string) {
+  const rows = await db.select().from(list).where(eq(list.slug, slug)).limit(1)
+  return rows[0] ?? null
+}
+
+export async function slugExists(slug: string) {
+  const rows = await db
+    .select({ slug: list.slug })
+    .from(list)
+    .where(eq(list.slug, slug))
+    .limit(1)
+  return rows.length > 0
+}
+
 export async function findByUserId(userId: string) {
   return db
     .select()
     .from(list)
     .where(eq(list.userId, userId))
     .orderBy(desc(list.createdAt))
+}
+
+export async function findByUserIdPaginated(
+  userId: string,
+  limit: number,
+  offset: number
+) {
+  return db
+    .select()
+    .from(list)
+    .where(eq(list.userId, userId))
+    .orderBy(desc(list.createdAt))
+    .limit(limit)
+    .offset(offset)
+}
+
+export async function countByUserId(userId: string) {
+  const rows = await db
+    .select({ count: count() })
+    .from(list)
+    .where(eq(list.userId, userId))
+  return rows[0]?.count ?? 0
+}
+
+export async function countPublicByUserId(userId: string) {
+  const rows = await db
+    .select({ count: count() })
+    .from(list)
+    .where(and(eq(list.userId, userId), eq(list.visibility, 'public')))
+  return rows[0]?.count ?? 0
+}
+
+export async function countItemsByUserId(userId: string) {
+  const rows = await db
+    .select({ count: count() })
+    .from(listItem)
+    .innerJoin(list, eq(listItem.listId, list.id))
+    .where(eq(list.userId, userId))
+  return rows[0]?.count ?? 0
 }
 
 export async function findPublic(limit = 20, offset = 0) {
@@ -27,8 +80,23 @@ export async function findPublic(limit = 20, offset = 0) {
     .offset(offset)
 }
 
+export async function findPublicByUserId(
+  userId: string,
+  limit = 20,
+  offset = 0
+) {
+  return db
+    .select()
+    .from(list)
+    .where(and(eq(list.userId, userId), eq(list.visibility, 'public')))
+    .orderBy(desc(list.createdAt))
+    .limit(limit)
+    .offset(offset)
+}
+
 export async function create(data: {
   userId: string
+  slug: string
   title: string
   description?: string | null
   coverImage?: string | null
@@ -43,14 +111,31 @@ export async function create(data: {
   return rows[0]
 }
 
+export async function itemCountsByListIds(listIds: string[]) {
+  if (listIds.length === 0) return {}
+  const rows = await db
+    .select({
+      listId: listItem.listId,
+      count: count(),
+    })
+    .from(listItem)
+    .where(sql`${listItem.listId} IN ${listIds}`)
+    .groupBy(listItem.listId)
+  const map: Record<string, number> = {}
+  for (const r of rows) map[r.listId] = r.count
+  return map
+}
+
 export async function update(
   id: string,
   userId: string,
   data: Partial<{
     title: string
+    slug: string
     description: string | null
     coverImage: string | null
     visibility: Visibility
+    type: ListType
   }>
 ) {
   const rows = await db

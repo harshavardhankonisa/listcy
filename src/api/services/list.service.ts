@@ -1,17 +1,32 @@
 import * as listRepo from '@/api/repositories/list.repository'
 import * as tagRepo from '@/api/repositories/tag.repository'
+import { generateUniqueSlug } from '@/api/utils/slug'
 import type { Visibility, ListType } from '@/constants/list'
+
+// ── Lookups ─────────────────────────────────────────────────────────────
 
 export async function getListById(id: string, requesterId?: string | null) {
   const found = await listRepo.findById(id)
-  if (!found) return null
+  return found ? enrichList(found, requesterId) : null
+}
 
+export async function getListBySlug(slug: string, requesterId?: string | null) {
+  const found = await listRepo.findBySlug(slug)
+  return found ? enrichList(found, requesterId) : null
+}
+
+async function enrichList(
+  found: Awaited<ReturnType<typeof listRepo.findById>> & object,
+  requesterId?: string | null
+) {
   if (found.visibility === 'private' && found.userId !== requesterId) {
     return null
   }
 
-  const items = await listRepo.findItemsByListId(id)
-  const tagRows = await listRepo.findTagsByListId(id)
+  const [items, tagRows] = await Promise.all([
+    listRepo.findItemsByListId(found.id),
+    listRepo.findTagsByListId(found.id),
+  ])
   const tags =
     tagRows.length > 0
       ? await tagRepo.findByIds(tagRows.map((r) => r.tagId))
@@ -24,9 +39,55 @@ export async function getListsByUserId(userId: string) {
   return listRepo.findByUserId(userId)
 }
 
+export async function getListsByUserIdPaginated(
+  userId: string,
+  limit: number,
+  offset: number
+) {
+  const [lists, total] = await Promise.all([
+    listRepo.findByUserIdPaginated(userId, limit, offset),
+    listRepo.countByUserId(userId),
+  ])
+  const ids = lists.map((l) => l.id)
+  const itemCounts = await listRepo.itemCountsByListIds(ids)
+  return {
+    lists: lists.map((l) => ({ ...l, itemCount: itemCounts[l.id] ?? 0 })),
+    total,
+  }
+}
+
 export async function getPublicLists(limit = 20, offset = 0) {
   return listRepo.findPublic(limit, offset)
 }
+
+export async function getPublicListsByUserId(
+  userId: string,
+  limit = 20,
+  offset = 0
+) {
+  const lists = await listRepo.findPublicByUserId(userId, limit, offset)
+  const ids = lists.map((l) => l.id)
+  const itemCounts = await listRepo.itemCountsByListIds(ids)
+  return lists.map((l) => ({ ...l, itemCount: itemCounts[l.id] ?? 0 }))
+}
+
+// ── Dashboard stats ─────────────────────────────────────────────────────
+
+export async function getDashboardStats(userId: string) {
+  const [totalLists, publicLists, totalItems] = await Promise.all([
+    listRepo.countByUserId(userId),
+    listRepo.countPublicByUserId(userId),
+    listRepo.countItemsByUserId(userId),
+  ])
+  return {
+    totalLists,
+    publicLists,
+    privateLists: totalLists - publicLists,
+    totalItems,
+  }
+}
+
+// ── Create / Update / Delete ────────────────────────────────────────────
 
 export async function createList(
   userId: string,
@@ -40,7 +101,8 @@ export async function createList(
   }
 ) {
   const { tags: tagNames, ...listData } = data
-  const created = await listRepo.create({ userId, ...listData })
+  const slug = await generateUniqueSlug(data.title, listRepo.slugExists)
+  const created = await listRepo.create({ userId, slug, ...listData })
 
   if (tagNames && tagNames.length > 0) {
     const resolvedTags = await Promise.all(
@@ -63,9 +125,40 @@ export async function updateList(
     description: string | null
     coverImage: string | null
     visibility: Visibility
+    type: ListType
+    tags: string[]
   }>
 ) {
-  return listRepo.update(id, userId, data)
+  const { tags: tagNames, ...fields } = data
+
+  // If title changed, regenerate slug
+  const updateData: Record<string, unknown> = { ...fields }
+  if (fields.title) {
+    updateData.slug = await generateUniqueSlug(fields.title, async (s) => {
+      const existing = await listRepo.findBySlug(s)
+      // Allow the same slug if it belongs to this list
+      return existing !== null && existing.id !== id
+    })
+  }
+
+  const updated = await listRepo.update(
+    id,
+    userId,
+    updateData as Parameters<typeof listRepo.update>[2]
+  )
+
+  if (updated && tagNames !== undefined) {
+    const resolvedTags =
+      tagNames.length > 0
+        ? await Promise.all(tagNames.map((n) => tagRepo.findOrCreate(n)))
+        : []
+    await listRepo.setTags(
+      updated.id,
+      resolvedTags.map((t) => t.id)
+    )
+  }
+
+  return updated
 }
 
 export async function deleteList(id: string, userId: string) {

@@ -9,7 +9,7 @@ export const userHooks: NonNullable<
 >['user'] = {
   create: {
     after: async (user) => {
-      await bootstrapUserData(user.id, user.name)
+      await bootstrapUserData(user.id, user.name, user.email)
     },
   },
 }

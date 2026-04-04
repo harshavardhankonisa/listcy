@@ -12,14 +12,37 @@ export async function findProfileByUserId(userId: string) {
   return rows[0] ?? null
 }
 
+export async function findProfileByUsername(username: string) {
+  const rows = await db
+    .select()
+    .from(userProfile)
+    .where(eq(userProfile.username, username))
+    .limit(1)
+  return rows[0] ?? null
+}
+
+export async function usernameExists(username: string) {
+  const rows = await db
+    .select({ username: userProfile.username })
+    .from(userProfile)
+    .where(eq(userProfile.username, username))
+    .limit(1)
+  return rows.length > 0
+}
+
 export async function createProfile(
   userId: string,
-  data: { displayName?: string | null }
+  data: { displayName?: string | null; username?: string | null }
 ) {
   const id = crypto.randomUUID()
   const rows = await db
     .insert(userProfile)
-    .values({ id, userId, displayName: data.displayName ?? null })
+    .values({
+      id,
+      userId,
+      displayName: data.displayName ?? null,
+      username: data.username ?? null,
+    })
     .returning()
   return rows[0]
 }
@@ -27,6 +50,7 @@ export async function createProfile(
 export async function updateProfile(
   userId: string,
   data: Partial<{
+    username: string | null
     displayName: string | null
     bio: string | null
     phone: string | null

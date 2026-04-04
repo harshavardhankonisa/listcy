@@ -69,7 +69,7 @@ export function CreateListForm() {
       })
       if (!res.ok) throw new Error()
       const { list } = await res.json()
-      router.push(`/lists/${list.id}`)
+      router.push(`/dashboard/lists/${list.slug}/edit`)
     } catch {
       setError('Something went wrong. Please try again.')
       setSubmitting(false)

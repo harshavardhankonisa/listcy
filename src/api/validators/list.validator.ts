@@ -27,6 +27,8 @@ export const updateListSchema = z
     description: descriptionSchema,
     coverImage: urlSchema,
     visibility: visibilitySchema.optional(),
+    type: listTypeSchema.optional(),
+    tags: tagsSchema.optional(),
   })
   .refine((data) => Object.keys(data).length > 0, {
     message: 'At least one field must be provided',

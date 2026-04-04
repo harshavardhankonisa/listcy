@@ -1,5 +1,12 @@
 import { relations } from 'drizzle-orm'
-import { pgTable, text, timestamp, boolean, index } from 'drizzle-orm/pg-core'
+import {
+  pgTable,
+  text,
+  timestamp,
+  boolean,
+  index,
+  uniqueIndex,
+} from 'drizzle-orm/pg-core'
 import { user } from './auth.schema'
 import type { Theme, Locale, Timezone } from '@/constants/user'
 
@@ -11,6 +18,7 @@ export const userProfile = pgTable(
       .notNull()
       .unique()
       .references(() => user.id, { onDelete: 'cascade' }),
+    username: text('username'),
     displayName: text('display_name'),
     bio: text('bio'),
     phone: text('phone'),
@@ -24,7 +32,10 @@ export const userProfile = pgTable(
       .$onUpdate(() => new Date())
       .notNull(),
   },
-  (table) => [index('userProfile_userId_idx').on(table.userId)]
+  (table) => [
+    index('userProfile_userId_idx').on(table.userId),
+    uniqueIndex('userProfile_username_idx').on(table.username),
+  ]
 )
 
 export const userProfileRelations = relations(userProfile, ({ one }) => ({

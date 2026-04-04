@@ -38,6 +38,14 @@ export async function updateProfile(request: Request) {
   return res.ok({ profile })
 }
 
+// ── Public Profile ────────────────────────────────────────────────────────────
+
+export async function getPublicProfile(_request: Request, username: string) {
+  const profile = await userService.getPublicProfile(username)
+  if (!profile) return res.notFound('User not found')
+  return res.ok({ profile })
+}
+
 // ── Settings ──────────────────────────────────────────────────────────────────
 
 export async function getSettings() {

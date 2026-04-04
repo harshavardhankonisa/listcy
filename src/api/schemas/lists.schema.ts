@@ -1,5 +1,12 @@
 import { relations } from 'drizzle-orm'
-import { pgTable, text, timestamp, integer, index } from 'drizzle-orm/pg-core'
+import {
+  pgTable,
+  text,
+  timestamp,
+  integer,
+  index,
+  uniqueIndex,
+} from 'drizzle-orm/pg-core'
 import { user } from './auth.schema'
 import { listToTag } from './tags.schema'
 import { collectionToList } from './collections.schema'
@@ -12,6 +19,7 @@ export const list = pgTable(
     userId: text('user_id')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
+    slug: text('slug').notNull(),
     title: text('title').notNull(),
     description: text('description'),
     coverImage: text('cover_image'),
@@ -29,6 +37,7 @@ export const list = pgTable(
   (table) => [
     index('list_userId_idx').on(table.userId),
     index('list_visibility_idx').on(table.visibility),
+    uniqueIndex('list_slug_idx').on(table.slug),
   ]
 )
 

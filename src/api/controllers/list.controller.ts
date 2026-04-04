@@ -8,6 +8,7 @@ import {
   createListSchema,
   updateListSchema,
   createItemSchema,
+  updateItemSchema,
 } from '@/api/validators/list.validator'
 import * as res from '@/api/utils/response'
 import { parsePagination } from '@/api/utils/pagination'
@@ -26,8 +27,13 @@ export async function getLists(request: Request) {
   const { session, error } = await requireSession()
   if (error) return error
 
-  const lists = await listService.getListsByUserId(session.user.id)
-  return res.ok({ lists })
+  const { limit, offset } = parsePagination(new URL(request.url))
+  const data = await listService.getListsByUserIdPaginated(
+    session.user.id,
+    limit,
+    offset
+  )
+  return res.ok(data)
 }
 
 export async function createList(request: Request) {
@@ -48,24 +54,27 @@ export async function createList(request: Request) {
   return res.created({ list })
 }
 
-export async function getList(_request: Request, id: string) {
+export async function getListBySlug(_request: Request, slug: string) {
   let requesterId: string | null = null
   try {
     const { session } = await requireSession()
     requesterId = session?.user?.id ?? null
   } catch {}
 
-  const list = await listService.getListById(id, requesterId)
+  const list = await listService.getListBySlug(slug, requesterId)
   if (!list) return res.notFound('List not found')
   return res.ok({ list })
 }
 
-export async function updateList(request: Request, id: string) {
+export async function updateListBySlug(request: Request, slug: string) {
   const { session, error } = await requireSession()
   if (error) return error
 
   const rl = await rateLimit(session.user.id, RATE_LIMITS.write)
   if (!rl.allowed) return res.tooManyRequests(rl)
+
+  const found = await listService.getListBySlug(slug, session.user.id)
+  if (!found) return res.notFound('List not found')
 
   const body = await res.parseBody(request)
   if (!body.ok) return body.response
@@ -74,26 +83,65 @@ export async function updateList(request: Request, id: string) {
   if (!parsed.success)
     return res.badRequest('Validation failed', z.flattenError(parsed.error))
 
-  const list = await listService.updateList(id, session.user.id, parsed.data)
+  const list = await listService.updateList(
+    found.id,
+    session.user.id,
+    parsed.data
+  )
   if (!list) return res.notFound('List not found or not owned')
   return res.ok({ list })
 }
 
-export async function deleteList(_request: Request, id: string) {
+export async function deleteListBySlug(_request: Request, slug: string) {
   const { session, error } = await requireSession()
   if (error) return error
 
   const rl = await rateLimit(session.user.id, RATE_LIMITS.write)
   if (!rl.allowed) return res.tooManyRequests(rl)
 
-  const deleted = await listService.deleteList(id, session.user.id)
+  const found = await listService.getListBySlug(slug, session.user.id)
+  if (!found) return res.notFound('List not found')
+
+  const deleted = await listService.deleteList(found.id, session.user.id)
   if (!deleted) return res.notFound('List not found or not owned')
   return res.ok({ success: true })
 }
 
+// ── Dashboard ─────────────────────────────────────────────────────────────────
+
+export async function getDashboardStats() {
+  const { session, error } = await requireSession()
+  if (error) return error
+
+  const stats = await listService.getDashboardStats(session.user.id)
+  return res.ok({ stats })
+}
+
 // ── Items ─────────────────────────────────────────────────────────────────────
 
-export async function addItem(request: Request, listId: string) {
+export async function addItemBySlug(request: Request, slug: string) {
+  const { session, error } = await requireSession()
+  if (error) return error
+
+  const rl = await rateLimit(session.user.id, RATE_LIMITS.write)
+  if (!rl.allowed) return res.tooManyRequests(rl)
+
+  const found = await listService.getListBySlug(slug, session.user.id)
+  if (!found) return res.notFound('List not found')
+
+  const body = await res.parseBody(request)
+  if (!body.ok) return body.response
+
+  const parsed = createItemSchema.safeParse(body.data)
+  if (!parsed.success)
+    return res.badRequest('Validation failed', z.flattenError(parsed.error))
+
+  const item = await listService.addItem(found.id, session.user.id, parsed.data)
+  if (!item) return res.notFound('List not found or not owned')
+  return res.created({ item })
+}
+
+export async function updateItem(request: Request, itemId: string) {
   const { session, error } = await requireSession()
   if (error) return error
 
@@ -103,11 +151,27 @@ export async function addItem(request: Request, listId: string) {
   const body = await res.parseBody(request)
   if (!body.ok) return body.response
 
-  const parsed = createItemSchema.safeParse(body.data)
+  const parsed = updateItemSchema.safeParse(body.data)
   if (!parsed.success)
     return res.badRequest('Validation failed', z.flattenError(parsed.error))
 
-  const item = await listService.addItem(listId, session.user.id, parsed.data)
-  if (!item) return res.notFound('List not found or not owned')
-  return res.created({ item })
+  const item = await listService.updateItem(
+    itemId,
+    session.user.id,
+    parsed.data
+  )
+  if (!item) return res.notFound('Item not found or not owned')
+  return res.ok({ item })
+}
+
+export async function deleteItem(_request: Request, itemId: string) {
+  const { session, error } = await requireSession()
+  if (error) return error
+
+  const rl = await rateLimit(session.user.id, RATE_LIMITS.write)
+  if (!rl.allowed) return res.tooManyRequests(rl)
+
+  const deleted = await listService.deleteItem(itemId, session.user.id)
+  if (!deleted) return res.notFound('Item not found or not owned')
+  return res.ok({ success: true })
 }

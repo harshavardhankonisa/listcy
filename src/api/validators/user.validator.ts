@@ -12,6 +12,15 @@ const timezoneSchema = z.enum([...TIMEZONES] as [Timezone, ...Timezone[]])
 
 export const updateProfileSchema = z
   .object({
+    username: z
+      .string()
+      .min(3)
+      .max(30)
+      .regex(
+        /^[a-z0-9_-]+$/,
+        'Username must be lowercase alphanumeric, hyphens, or underscores'
+      )
+      .nullish(),
     displayName: z.string().min(1).max(100).trim().nullish(),
     bio: z.string().max(500).trim().nullish(),
     phone: z.string().max(30).trim().nullish(),
