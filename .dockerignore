@@ -1,0 +1,13 @@
+node_modules
+.next
+.git
+.gitignore
+.env*
+.DS_Store
+.husky
+
+infra/env
+infra/compose
+
+docs
+*.md

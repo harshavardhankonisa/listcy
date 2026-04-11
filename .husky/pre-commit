@@ -1,1 +1,19 @@
+# Enforce Node.js and npm version requirements
+REQUIRED_NODE=24
+REQUIRED_NPM=11
+
+CURRENT_NODE=$(node -v | cut -d. -f1 | tr -d 'v')
+CURRENT_NPM=$(npm -v | cut -d. -f1)
+
+if [ "$CURRENT_NODE" -lt "$REQUIRED_NODE" ]; then
+  echo "❌ Node.js >= $REQUIRED_NODE required (found $(node -v))"
+  exit 1
+fi
+
+if [ "$CURRENT_NPM" -lt "$REQUIRED_NPM" ]; then
+  echo "❌ npm >= $REQUIRED_NPM required (found v$(npm -v))"
+  exit 1
+fi
+
+# Run lint and prettier
 npx lint-staged

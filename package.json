@@ -1,6 +1,6 @@
 {
   "name": "listcy",
-  "description": "Listcy is a curated platform for creating, discovering, and sharing structured lists, turning rankings, resources, and collections into searchable, high-value content assets.",
+  "description": "Listcy is a platform where you can create, discover, and share useful lists",
   "version": "0.1.0",
   "private": true,
   "scripts": {
