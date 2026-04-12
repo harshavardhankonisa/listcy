@@ -1,8 +1,7 @@
+import type { SlugContext } from '@/api/types'
 import * as listController from '@/api/controllers/list.controller'
 
-type Params = { params: Promise<{ slug: string }> }
-
-export async function POST(request: Request, { params }: Params) {
+export async function POST(request: Request, { params }: SlugContext) {
   const { slug } = await params
   return listController.addItemBySlug(request, slug)
 }

@@ -12,10 +12,11 @@ import {
 } from '@/api/validators/collection.validator'
 import * as res from '@/api/utils/response'
 import { parsePagination } from '@/api/utils/pagination'
+import type { ApiResponse } from '@/api/types'
 
 // ── Collections ───────────────────────────────────────────────────────────────
 
-export async function getCollections(request: Request) {
+export async function getCollections(request: Request): ApiResponse {
   const url = new URL(request.url)
 
   if (url.searchParams.get('public') === 'true') {
@@ -36,7 +37,7 @@ export async function getCollections(request: Request) {
   return res.ok({ collections })
 }
 
-export async function createCollection(request: Request) {
+export async function createCollection(request: Request): ApiResponse {
   const { session, error } = await requireSession()
   if (error) return error
 
@@ -57,7 +58,10 @@ export async function createCollection(request: Request) {
   return res.created({ collection })
 }
 
-export async function getCollection(_request: Request, id: string) {
+export async function getCollection(
+  _request: Request,
+  id: string
+): ApiResponse {
   let requesterId: string | null = null
   try {
     const { session } = await requireSession()
@@ -69,7 +73,10 @@ export async function getCollection(_request: Request, id: string) {
   return res.ok({ collection })
 }
 
-export async function updateCollection(request: Request, id: string) {
+export async function updateCollection(
+  request: Request,
+  id: string
+): ApiResponse {
   const { session, error } = await requireSession()
   if (error) return error
 
@@ -92,7 +99,10 @@ export async function updateCollection(request: Request, id: string) {
   return res.ok({ collection })
 }
 
-export async function deleteCollection(_request: Request, id: string) {
+export async function deleteCollection(
+  _request: Request,
+  id: string
+): ApiResponse {
   const { session, error } = await requireSession()
   if (error) return error
 
@@ -106,7 +116,10 @@ export async function deleteCollection(_request: Request, id: string) {
 
 // ── Collection → Lists ────────────────────────────────────────────────────────
 
-export async function addListToCollection(request: Request, id: string) {
+export async function addListToCollection(
+  request: Request,
+  id: string
+): ApiResponse {
   const { session, error } = await requireSession()
   if (error) return error
 
@@ -131,7 +144,10 @@ export async function addListToCollection(request: Request, id: string) {
   return res.created({ result })
 }
 
-export async function removeListFromCollection(request: Request, id: string) {
+export async function removeListFromCollection(
+  request: Request,
+  id: string
+): ApiResponse {
   const { session, error } = await requireSession()
   if (error) return error
 

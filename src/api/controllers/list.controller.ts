@@ -12,10 +12,11 @@ import {
 } from '@/api/validators/list.validator'
 import * as res from '@/api/utils/response'
 import { parsePagination } from '@/api/utils/pagination'
+import type { ApiResponse } from '@/api/types'
 
 // ── Lists ─────────────────────────────────────────────────────────────────────
 
-export async function getLists(request: Request) {
+export async function getLists(request: Request): ApiResponse {
   const url = new URL(request.url)
 
   if (url.searchParams.get('public') === 'true') {
@@ -36,7 +37,7 @@ export async function getLists(request: Request) {
   return res.ok(data)
 }
 
-export async function createList(request: Request) {
+export async function createList(request: Request): ApiResponse {
   const { session, error } = await requireSession()
   if (error) return error
 
@@ -54,7 +55,10 @@ export async function createList(request: Request) {
   return res.created({ list })
 }
 
-export async function getListBySlug(_request: Request, slug: string) {
+export async function getListBySlug(
+  _request: Request,
+  slug: string
+): ApiResponse {
   let requesterId: string | null = null
   try {
     const { session } = await requireSession()
@@ -66,7 +70,10 @@ export async function getListBySlug(_request: Request, slug: string) {
   return res.ok({ list })
 }
 
-export async function updateListBySlug(request: Request, slug: string) {
+export async function updateListBySlug(
+  request: Request,
+  slug: string
+): ApiResponse {
   const { session, error } = await requireSession()
   if (error) return error
 
@@ -92,7 +99,10 @@ export async function updateListBySlug(request: Request, slug: string) {
   return res.ok({ list })
 }
 
-export async function deleteListBySlug(_request: Request, slug: string) {
+export async function deleteListBySlug(
+  _request: Request,
+  slug: string
+): ApiResponse {
   const { session, error } = await requireSession()
   if (error) return error
 
@@ -109,7 +119,7 @@ export async function deleteListBySlug(_request: Request, slug: string) {
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
 
-export async function getDashboardStats() {
+export async function getDashboardStats(): ApiResponse {
   const { session, error } = await requireSession()
   if (error) return error
 
@@ -119,7 +129,10 @@ export async function getDashboardStats() {
 
 // ── Items ─────────────────────────────────────────────────────────────────────
 
-export async function addItemBySlug(request: Request, slug: string) {
+export async function addItemBySlug(
+  request: Request,
+  slug: string
+): ApiResponse {
   const { session, error } = await requireSession()
   if (error) return error
 
@@ -141,7 +154,10 @@ export async function addItemBySlug(request: Request, slug: string) {
   return res.created({ item })
 }
 
-export async function updateItem(request: Request, itemId: string) {
+export async function updateItem(
+  request: Request,
+  itemId: string
+): ApiResponse {
   const { session, error } = await requireSession()
   if (error) return error
 
@@ -164,7 +180,10 @@ export async function updateItem(request: Request, itemId: string) {
   return res.ok({ item })
 }
 
-export async function deleteItem(_request: Request, itemId: string) {
+export async function deleteItem(
+  _request: Request,
+  itemId: string
+): ApiResponse {
   const { session, error } = await requireSession()
   if (error) return error
 

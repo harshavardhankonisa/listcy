@@ -9,10 +9,11 @@ import {
   updateSettingsSchema,
 } from '@/api/validators/user.validator'
 import * as res from '@/api/utils/response'
+import type { ApiResponse } from '@/api/types'
 
 // ── Profile ───────────────────────────────────────────────────────────────────
 
-export async function getProfile() {
+export async function getProfile(): ApiResponse {
   const { session, error } = await requireSession()
   if (error) return error
 
@@ -20,7 +21,7 @@ export async function getProfile() {
   return res.ok({ profile })
 }
 
-export async function updateProfile(request: Request) {
+export async function updateProfile(request: Request): ApiResponse {
   const { session, error } = await requireSession()
   if (error) return error
 
@@ -40,7 +41,10 @@ export async function updateProfile(request: Request) {
 
 // ── Public Profile ────────────────────────────────────────────────────────────
 
-export async function getPublicProfile(_request: Request, username: string) {
+export async function getPublicProfile(
+  _request: Request,
+  username: string
+): ApiResponse {
   const profile = await userService.getPublicProfile(username)
   if (!profile) return res.notFound('User not found')
   return res.ok({ profile })
@@ -48,7 +52,7 @@ export async function getPublicProfile(_request: Request, username: string) {
 
 // ── Settings ──────────────────────────────────────────────────────────────────
 
-export async function getSettings() {
+export async function getSettings(): ApiResponse {
   const { session, error } = await requireSession()
   if (error) return error
 
@@ -56,7 +60,7 @@ export async function getSettings() {
   return res.ok({ settings })
 }
 
-export async function updateSettings(request: Request) {
+export async function updateSettings(request: Request): ApiResponse {
   const { session, error } = await requireSession()
   if (error) return error
 
