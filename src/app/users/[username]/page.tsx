@@ -113,6 +113,9 @@ export default async function ProfilePage({ params }: Props) {
         <ProfileTabs
           lists={serializedLists}
           collections={serializedCollections}
+          authorName={displayName}
+          authorUsername={username}
+          authorAvatarUrl={profile.avatarUrl}
         />
       </div>
     </AppShell>

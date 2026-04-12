@@ -1,5 +1,29 @@
+import type { ReactNode } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
+
+/**
+ * Wraps children in a Link to the author's profile when username is available,
+ * otherwise renders a plain span. Never silently drops children.
+ */
+function AuthorLink({
+  username,
+  className,
+  children,
+}: {
+  username?: string | null
+  className?: string
+  children: ReactNode
+}) {
+  if (username) {
+    return (
+      <Link href={`/users/${username}`} className={className}>
+        {children}
+      </Link>
+    )
+  }
+  return <span className={className}>{children}</span>
+}
 
 export interface ListCardProps {
   id: string
@@ -64,29 +88,23 @@ export function ListCard({
 
       {/* Info */}
       <div className="flex gap-3">
-        {/* Avatar */}
-        {authorUsername ? (
-          <Link href={`/users/${authorUsername}`} className="mt-0.5 shrink-0">
-            {authorAvatarUrl ? (
-              <Image
-                src={authorAvatarUrl}
-                alt={author}
-                width={36}
-                height={36}
-                className="h-9 w-9 rounded-full object-cover"
-                unoptimized
-              />
-            ) : (
-              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-medium text-white uppercase">
-                {author[0] ?? '?'}
-              </div>
-            )}
-          </Link>
-        ) : (
-          <div className="mt-0.5 flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-blue-600 text-sm font-medium text-white uppercase">
-            {author[0] ?? '?'}
-          </div>
-        )}
+        {/* Avatar — always links to profile */}
+        <AuthorLink username={authorUsername} className="mt-0.5 shrink-0">
+          {authorAvatarUrl ? (
+            <Image
+              src={authorAvatarUrl}
+              alt={author}
+              width={36}
+              height={36}
+              className="h-9 w-9 rounded-full object-cover"
+              unoptimized
+            />
+          ) : (
+            <div className="flex h-9 w-9 items-center justify-center rounded-full bg-blue-600 text-sm font-medium text-white uppercase">
+              {author[0] ?? '?'}
+            </div>
+          )}
+        </AuthorLink>
         <div className="flex flex-col">
           <Link
             href={`/lists/${slug}`}
@@ -94,18 +112,13 @@ export function ListCard({
           >
             {title}
           </Link>
-          {authorUsername ? (
-            <Link
-              href={`/users/${authorUsername}`}
-              className="mt-0.5 text-xs text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-300"
-            >
-              {author}
-            </Link>
-          ) : (
-            <p className="mt-0.5 text-xs text-zinc-600 dark:text-zinc-400">
-              {author}
-            </p>
-          )}
+          {/* Author name — always links to profile */}
+          <AuthorLink
+            username={authorUsername}
+            className="mt-0.5 text-xs text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-300"
+          >
+            {author}
+          </AuthorLink>
           <p className="text-xs text-zinc-600 dark:text-zinc-400">
             {tags.length > 0 ? tags[0] : 'General'} · {timeAgo}
           </p>

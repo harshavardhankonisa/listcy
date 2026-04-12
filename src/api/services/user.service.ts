@@ -6,8 +6,30 @@ import type { Theme, Locale, Timezone } from '@/constants/user'
 
 // ── Profile ─────────────────────────────────────────────────────────────
 
+/**
+ * If the profile has no username, auto-generate one from the user's email
+ * or name, persist it, and return the updated profile.
+ */
+async function ensureUsername(
+  profile: NonNullable<Awaited<ReturnType<typeof userRepo.findProfileByUserId>>>
+) {
+  if (profile.username) return profile
+
+  // Look up the auth user to get email / name for slug generation
+  const authUser = await userRepo.findUserById(profile.userId)
+  const base = authUser?.email
+    ? usernameFromEmail(authUser.email)
+    : (authUser?.name ?? 'user')
+  const username = await generateUniqueSlug(base, userRepo.usernameExists)
+
+  await userRepo.updateProfile(profile.userId, { username })
+  return { ...profile, username }
+}
+
 export async function getProfile(userId: string) {
-  return userRepo.findProfileByUserId(userId)
+  const profile = await userRepo.findProfileByUserId(userId)
+  if (!profile) return null
+  return ensureUsername(profile)
 }
 
 export async function getPublicProfile(username: string) {

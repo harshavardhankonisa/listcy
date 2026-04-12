@@ -2,27 +2,7 @@
 
 import { useState } from 'react'
 import Image from 'next/image'
-import Link from 'next/link'
-import type { ListType } from '@/constants/list'
-
-const TYPE_LABELS: Record<ListType, string> = {
-  ranked: 'Ranked',
-  resources: 'Resources',
-  checklist: 'Checklist',
-  watchlist: 'Watchlist',
-  general: 'General',
-}
-
-const TYPE_COLORS: Record<ListType, string> = {
-  ranked:
-    'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-  resources: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-  checklist:
-    'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
-  watchlist:
-    'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
-  general: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
-}
+import { ListCard } from '@/client/components/common/ListCard'
 
 type Tab = 'lists' | 'collections'
 
@@ -48,9 +28,34 @@ export interface PublicCollection {
 interface ProfileTabsProps {
   lists: PublicList[]
   collections: PublicCollection[]
+  authorName: string
+  authorUsername: string
+  authorAvatarUrl: string | null
 }
 
-export function ProfileTabs({ lists, collections }: ProfileTabsProps) {
+function timeAgo(dateStr: string): string {
+  const seconds = Math.floor((Date.now() - new Date(dateStr).getTime()) / 1000)
+  if (seconds < 60) return 'just now'
+  const minutes = Math.floor(seconds / 60)
+  if (minutes < 60) return `${minutes}m ago`
+  const hours = Math.floor(minutes / 60)
+  if (hours < 24) return `${hours}h ago`
+  const days = Math.floor(hours / 24)
+  if (days < 7) return `${days}d ago`
+  const weeks = Math.floor(days / 7)
+  if (weeks < 4) return `${weeks}w ago`
+  const months = Math.floor(days / 30)
+  if (months < 12) return `${months}mo ago`
+  return `${Math.floor(days / 365)}y ago`
+}
+
+export function ProfileTabs({
+  lists,
+  collections,
+  authorName,
+  authorUsername,
+  authorAvatarUrl,
+}: ProfileTabsProps) {
   const [activeTab, setActiveTab] = useState<Tab>('lists')
 
   const tabs: { key: Tab; label: string; count: number }[] = [
@@ -84,7 +89,14 @@ export function ProfileTabs({ lists, collections }: ProfileTabsProps) {
       </div>
 
       {/* Tab content */}
-      {activeTab === 'lists' && <ListsGrid lists={lists} />}
+      {activeTab === 'lists' && (
+        <ListsGrid
+          lists={lists}
+          authorName={authorName}
+          authorUsername={authorUsername}
+          authorAvatarUrl={authorAvatarUrl}
+        />
+      )}
       {activeTab === 'collections' && (
         <CollectionsGrid collections={collections} />
       )}
@@ -92,66 +104,37 @@ export function ProfileTabs({ lists, collections }: ProfileTabsProps) {
   )
 }
 
-function ListsGrid({ lists }: { lists: PublicList[] }) {
+function ListsGrid({
+  lists,
+  authorName,
+  authorUsername,
+  authorAvatarUrl,
+}: {
+  lists: PublicList[]
+  authorName: string
+  authorUsername: string
+  authorAvatarUrl: string | null
+}) {
   if (lists.length === 0) {
     return <EmptyState icon="list" message="No public lists yet." />
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+    <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
       {lists.map((l) => (
-        <Link
+        <ListCard
           key={l.id}
-          href={`/lists/${l.slug}`}
-          className="group rounded-xl border border-zinc-200 bg-white p-5 transition-colors hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
-        >
-          {l.coverImage && (
-            <div className="relative mb-3 h-28 w-full overflow-hidden rounded-lg">
-              <Image
-                src={l.coverImage}
-                alt=""
-                fill
-                className="object-cover"
-                unoptimized
-              />
-            </div>
-          )}
-          {!l.coverImage && (
-            <div className="mb-3 flex h-28 w-full items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800">
-              <svg
-                className="h-10 w-10 text-zinc-300 dark:text-zinc-600"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={1}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
-                />
-              </svg>
-            </div>
-          )}
-          <div className="mb-2 flex items-center gap-2">
-            <span
-              className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${TYPE_COLORS[l.type as ListType]}`}
-            >
-              {TYPE_LABELS[l.type as ListType]}
-            </span>
-            <span className="text-xs text-zinc-400">
-              {l.itemCount} {l.itemCount === 1 ? 'item' : 'items'}
-            </span>
-          </div>
-          <h3 className="text-sm font-semibold text-zinc-900 group-hover:text-zinc-600 dark:text-zinc-100 dark:group-hover:text-zinc-300">
-            {l.title}
-          </h3>
-          {l.description && (
-            <p className="mt-1 line-clamp-2 text-xs text-zinc-500 dark:text-zinc-400">
-              {l.description}
-            </p>
-          )}
-        </Link>
+          id={l.id}
+          slug={l.slug}
+          title={l.title}
+          author={authorName}
+          authorUsername={authorUsername}
+          authorAvatarUrl={authorAvatarUrl}
+          itemCount={l.itemCount}
+          tags={[]}
+          timeAgo={timeAgo(l.createdAt)}
+          coverImage={l.coverImage}
+        />
       ))}
     </div>
   )

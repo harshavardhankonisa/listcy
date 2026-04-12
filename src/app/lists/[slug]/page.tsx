@@ -105,21 +105,15 @@ export default async function PublicListPage({ params }: Props) {
             <h1 className="text-3xl font-bold text-zinc-900 dark:text-zinc-100">
               {list.title}
             </h1>
-            {profile && (
+            {profile?.username && (
               <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">
                 by{' '}
-                {profile.username ? (
-                  <Link
-                    href={`/users/${profile.username}`}
-                    className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
-                  >
-                    @{profile.username}
-                  </Link>
-                ) : (
-                  <span className="font-medium">
-                    {profile.displayName ?? 'Anonymous'}
-                  </span>
-                )}
+                <Link
+                  href={`/users/${profile.username}`}
+                  className="font-medium text-zinc-900 hover:text-blue-600 dark:text-zinc-100 dark:hover:text-blue-400"
+                >
+                  {profile.displayName ?? `@${profile.username}`}
+                </Link>
               </p>
             )}
             {list.description && (
@@ -203,35 +197,38 @@ export default async function PublicListPage({ params }: Props) {
         {/* Sidebar — right (desktop) */}
         <aside className="w-full shrink-0 lg:w-72">
           {/* Creator card */}
-          {profile && (
+          {profile?.username && (
             <div className="mb-6 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
               <div className="flex items-center gap-3">
-                {profile.avatarUrl ? (
-                  <Image
-                    src={profile.avatarUrl}
-                    alt=""
-                    width={40}
-                    height={40}
-                    className="rounded-full object-cover"
-                    unoptimized
-                  />
-                ) : (
-                  <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-200 text-sm font-bold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
-                    {(profile.displayName ?? '?').charAt(0).toUpperCase()}
-                  </div>
-                )}
-                <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                    {profile.displayName ?? 'Anonymous'}
-                  </p>
-                  {profile.username && (
-                    <Link
-                      href={`/users/${profile.username}`}
-                      className="text-xs text-blue-600 hover:text-blue-500 dark:text-blue-400"
-                    >
-                      @{profile.username}
-                    </Link>
+                <Link href={`/users/${profile.username}`} className="shrink-0">
+                  {profile.avatarUrl ? (
+                    <Image
+                      src={profile.avatarUrl}
+                      alt=""
+                      width={40}
+                      height={40}
+                      className="rounded-full object-cover"
+                      unoptimized
+                    />
+                  ) : (
+                    <div className="flex h-10 w-10 items-center justify-center rounded-full bg-zinc-200 text-sm font-bold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
+                      {(profile.displayName ?? '?').charAt(0).toUpperCase()}
+                    </div>
                   )}
+                </Link>
+                <div className="min-w-0">
+                  <Link
+                    href={`/users/${profile.username}`}
+                    className="block truncate text-sm font-semibold text-zinc-900 hover:text-blue-600 dark:text-zinc-100 dark:hover:text-blue-400"
+                  >
+                    {profile.displayName ?? `@${profile.username}`}
+                  </Link>
+                  <Link
+                    href={`/users/${profile.username}`}
+                    className="text-xs text-blue-600 hover:text-blue-500 dark:text-blue-400"
+                  >
+                    @{profile.username}
+                  </Link>
                 </div>
               </div>
               {profile.bio && (
@@ -246,7 +243,16 @@ export default async function PublicListPage({ params }: Props) {
           {otherLists.length > 0 && (
             <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
               <h3 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
-                More by this creator
+                {profile?.username ? (
+                  <Link
+                    href={`/users/${profile.username}`}
+                    className="hover:text-blue-600 dark:hover:text-blue-400"
+                  >
+                    More by this creator →
+                  </Link>
+                ) : (
+                  'More by this creator'
+                )}
               </h3>
               <div className="flex flex-col gap-2">
                 {otherLists.map((l) => (

@@ -14,9 +14,6 @@ interface NavLink {
 const mainLinks: NavLink[] = [
   { href: '/dashboard', label: 'Overview', icon: '📊', exact: true },
   { href: '/dashboard/lists', label: 'My Lists', icon: '📝' },
-]
-
-const quickLinks: NavLink[] = [
   {
     href: '/dashboard/lists/new',
     label: 'Create List',
@@ -56,7 +53,6 @@ export function DashboardNav() {
   return (
     <nav className="flex flex-col gap-4">
       <NavGroup links={mainLinks} pathname={pathname} />
-      <NavGroup links={quickLinks} pathname={pathname} />
       <hr className="border-zinc-200 dark:border-zinc-800" />
       <NavGroup links={[...profileLink, ...accountLinks]} pathname={pathname} />
     </nav>
