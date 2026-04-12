@@ -117,16 +117,6 @@ export async function deleteListBySlug(
   return res.ok({ success: true })
 }
 
-// ── Dashboard ─────────────────────────────────────────────────────────────────
-
-export async function getDashboardStats(): ApiResponse {
-  const { session, error } = await requireSession()
-  if (error) return error
-
-  const stats = await listService.getDashboardStats(session.user.id)
-  return res.ok({ stats })
-}
-
 // ── Items ─────────────────────────────────────────────────────────────────────
 
 export async function addItemBySlug(

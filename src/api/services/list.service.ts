@@ -71,22 +71,6 @@ export async function getPublicListsByUserId(
   return lists.map((l) => ({ ...l, itemCount: itemCounts[l.id] ?? 0 }))
 }
 
-// ── Dashboard stats ─────────────────────────────────────────────────────
-
-export async function getDashboardStats(userId: string) {
-  const [totalLists, publicLists, totalItems] = await Promise.all([
-    listRepo.countByUserId(userId),
-    listRepo.countPublicByUserId(userId),
-    listRepo.countItemsByUserId(userId),
-  ])
-  return {
-    totalLists,
-    publicLists,
-    privateLists: totalLists - publicLists,
-    totalItems,
-  }
-}
-
 // ── Create / Update / Delete ────────────────────────────────────────────
 
 export async function createList(

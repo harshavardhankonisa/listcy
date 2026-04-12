@@ -1,5 +1,5 @@
-import * as listController from '@/api/controllers/list.controller'
+import * as dashboardController from '@/api/controllers/dashboard.controller'
 
 export async function GET() {
-  return listController.getDashboardStats()
+  return dashboardController.getStats()
 }

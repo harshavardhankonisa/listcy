@@ -110,7 +110,7 @@ export default async function PublicListPage({ params }: Props) {
                 by{' '}
                 {profile.username ? (
                   <Link
-                    href={`/u/${profile.username}`}
+                    href={`/users/${profile.username}`}
                     className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
                   >
                     @{profile.username}
@@ -226,7 +226,7 @@ export default async function PublicListPage({ params }: Props) {
                   </p>
                   {profile.username && (
                     <Link
-                      href={`/u/${profile.username}`}
+                      href={`/users/${profile.username}`}
                       className="text-xs text-blue-600 hover:text-blue-500 dark:text-blue-400"
                     >
                       @{profile.username}

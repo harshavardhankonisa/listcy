@@ -1,6 +1,7 @@
 import { headers } from 'next/headers'
 import Link from 'next/link'
 import { auth } from '@/api/config/auth'
+import * as dashboardService from '@/api/services/dashboard.service'
 import * as listService from '@/api/services/list.service'
 import type { ListType } from '@/constants/list'
 
@@ -28,7 +29,7 @@ export default async function DashboardPage() {
   if (!session) return null
 
   const [stats, { lists: recentLists }] = await Promise.all([
-    listService.getDashboardStats(session.user.id),
+    dashboardService.getStats(session.user.id),
     listService.getListsByUserIdPaginated(session.user.id, 5, 0),
   ])
 
