@@ -1,3 +1,6 @@
+import { redirect } from 'next/navigation'
+import { headers } from 'next/headers'
+import { auth } from '@/api/config/auth'
 import { AppShell } from '@/client/components/layout/AppShell'
 import { SettingsNav } from '@/client/components/settings/SettingsNav'
 
@@ -5,11 +8,14 @@ export const metadata = {
   title: 'Settings',
 }
 
-export default function SettingsLayout({
+export default async function SettingsLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const session = await auth.api.getSession({ headers: await headers() })
+  if (!session) redirect('/auth/login')
+
   return (
     <AppShell>
       <div className="mx-auto max-w-4xl">

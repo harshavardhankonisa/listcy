@@ -43,6 +43,11 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       type: 'profile',
       ...(profile.avatarUrl ? { images: [{ url: profile.avatarUrl }] } : {}),
     },
+    twitter: {
+      card: profile.avatarUrl ? 'summary_large_image' : 'summary',
+      title: `${name} — Listcy`,
+      description: profile.bio ?? `${name}'s public lists on Listcy`,
+    },
   }
 }
 
