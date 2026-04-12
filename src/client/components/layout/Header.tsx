@@ -13,8 +13,20 @@ interface HeaderProps {
 export function Header({ onMenuToggle }: HeaderProps) {
   const { data: session, isPending } = authClient.useSession()
   const [menuOpen, setMenuOpen] = useState(false)
+  const [username, setUsername] = useState<string | null>(null)
   const menuRef = useRef<HTMLDivElement>(null)
   const router = useRouter()
+
+  // Fetch profile username when session is available
+  useEffect(() => {
+    if (!session?.user) return
+    fetch('/api/user/profile')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.profile?.username) setUsername(data.profile.username)
+      })
+      .catch(() => {})
+  }, [session?.user])
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -181,6 +193,15 @@ export function Header({ onMenuToggle }: HeaderProps) {
                     {user.email}
                   </p>
                 </div>
+                {username && (
+                  <Link
+                    href={`/users/${username}`}
+                    onClick={() => setMenuOpen(false)}
+                    className="flex w-full items-center gap-2 px-4 py-2 text-sm text-zinc-700 hover:bg-zinc-100 dark:text-zinc-300 dark:hover:bg-zinc-700"
+                  >
+                    Your profile
+                  </Link>
+                )}
                 <Link
                   href="/dashboard"
                   onClick={() => setMenuOpen(false)}

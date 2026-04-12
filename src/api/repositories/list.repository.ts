@@ -2,6 +2,7 @@ import { eq, desc, and, count, sql } from 'drizzle-orm'
 import { db } from '@/api/config/db'
 import { list, listItem } from '@/api/schemas/lists.schema'
 import { listToTag } from '@/api/schemas/tags.schema'
+import { userProfile } from '@/api/schemas/users.schema'
 import type { Visibility, ListType } from '@/constants/list'
 
 export async function findById(id: string) {
@@ -72,8 +73,23 @@ export async function countItemsByUserId(userId: string) {
 
 export async function findPublic(limit = 20, offset = 0) {
   return db
-    .select()
+    .select({
+      id: list.id,
+      slug: list.slug,
+      title: list.title,
+      description: list.description,
+      coverImage: list.coverImage,
+      type: list.type,
+      visibility: list.visibility,
+      userId: list.userId,
+      createdAt: list.createdAt,
+      updatedAt: list.updatedAt,
+      authorUsername: userProfile.username,
+      authorDisplayName: userProfile.displayName,
+      authorAvatarUrl: userProfile.avatarUrl,
+    })
     .from(list)
+    .leftJoin(userProfile, eq(list.userId, userProfile.userId))
     .where(eq(list.visibility, 'public'))
     .orderBy(desc(list.createdAt))
     .limit(limit)

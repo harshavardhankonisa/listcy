@@ -27,6 +27,14 @@ export async function getCollectionsByUserId(userId: string) {
   return collectionRepo.findByUserId(userId)
 }
 
+export async function getPublicCollectionsByUserId(
+  userId: string,
+  limit = 20,
+  offset = 0
+) {
+  return collectionRepo.findPublicByUserId(userId, limit, offset)
+}
+
 export async function getPublicCollections(limit = 20, offset = 0) {
   return collectionRepo.findPublic(limit, offset)
 }

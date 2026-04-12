@@ -1,32 +1,13 @@
 import { notFound } from 'next/navigation'
 import Image from 'next/image'
-import Link from 'next/link'
 import type { Metadata } from 'next'
 import * as userService from '@/api/services/user.service'
 import * as listService from '@/api/services/list.service'
+import * as collectionService from '@/api/services/collection.service'
 import { AppShell } from '@/client/components/layout/AppShell'
-import type { ListType } from '@/constants/list'
+import { ProfileTabs } from '@/client/components/common/ProfileTabs'
 
 type Props = { params: Promise<{ username: string }> }
-
-const TYPE_LABELS: Record<ListType, string> = {
-  ranked: 'Ranked',
-  resources: 'Resources',
-  checklist: 'Checklist',
-  watchlist: 'Watchlist',
-  general: 'General',
-}
-
-const TYPE_COLORS: Record<ListType, string> = {
-  ranked:
-    'bg-amber-100 text-amber-700 dark:bg-amber-900/40 dark:text-amber-300',
-  resources: 'bg-blue-100 text-blue-700 dark:bg-blue-900/40 dark:text-blue-300',
-  checklist:
-    'bg-green-100 text-green-700 dark:bg-green-900/40 dark:text-green-300',
-  watchlist:
-    'bg-purple-100 text-purple-700 dark:bg-purple-900/40 dark:text-purple-300',
-  general: 'bg-zinc-100 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300',
-}
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { username } = await params
@@ -56,94 +37,83 @@ export default async function ProfilePage({ params }: Props) {
   const profile = await userService.getPublicProfile(username)
   if (!profile) notFound()
 
-  const lists = await listService.getPublicListsByUserId(profile.userId)
+  const [lists, collections, stats] = await Promise.all([
+    listService.getPublicListsByUserId(profile.userId),
+    collectionService.getPublicCollectionsByUserId(profile.userId),
+    userService.getPublicStats(profile.userId),
+  ])
+
+  const displayName = profile.displayName ?? `@${username}`
+  const initial = (profile.displayName ?? '?').charAt(0).toUpperCase()
+
+  // Serialize dates for client component
+  const serializedLists = lists.map((l) => ({
+    ...l,
+    createdAt: l.createdAt.toISOString(),
+    updatedAt: l.updatedAt.toISOString(),
+  }))
+  const serializedCollections = collections.map((c) => ({
+    ...c,
+    createdAt: c.createdAt.toISOString(),
+    updatedAt: c.updatedAt.toISOString(),
+  }))
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-4xl">
+      <div className="mx-auto max-w-5xl">
+        {/* Banner */}
+        <div className="mb-6 h-32 rounded-2xl bg-linear-to-r from-zinc-200 via-zinc-100 to-zinc-200 dark:from-zinc-800 dark:via-zinc-900 dark:to-zinc-800 sm:h-40" />
+
         {/* Profile header */}
-        <div className="mb-8 flex items-center gap-5">
-          {profile.avatarUrl ? (
-            <Image
-              src={profile.avatarUrl}
-              alt=""
-              width={80}
-              height={80}
-              className="rounded-full object-cover"
-              unoptimized
-            />
-          ) : (
-            <div className="flex h-20 w-20 items-center justify-center rounded-full bg-zinc-200 text-2xl font-bold text-zinc-600 dark:bg-zinc-700 dark:text-zinc-300">
-              {(profile.displayName ?? '?').charAt(0).toUpperCase()}
-            </div>
-          )}
-          <div>
+        <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-start sm:gap-6">
+          {/* Avatar */}
+          <div className="-mt-14 ml-4 sm:-mt-16 sm:ml-6">
+            {profile.avatarUrl ? (
+              <Image
+                src={profile.avatarUrl}
+                alt=""
+                width={112}
+                height={112}
+                className="h-24 w-24 rounded-full border-4 border-white object-cover dark:border-zinc-950 sm:h-28 sm:w-28"
+                unoptimized
+              />
+            ) : (
+              <div className="flex h-24 w-24 items-center justify-center rounded-full border-4 border-white bg-zinc-200 text-3xl font-bold text-zinc-600 dark:border-zinc-950 dark:bg-zinc-700 dark:text-zinc-300 sm:h-28 sm:w-28">
+                {initial}
+              </div>
+            )}
+          </div>
+
+          {/* Info */}
+          <div className="flex-1 px-4 sm:px-0 sm:pt-2">
             <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
-              {profile.displayName ?? `@${username}`}
+              {displayName}
             </h1>
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              @{username}
-            </p>
+            <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-zinc-500 dark:text-zinc-400">
+              <span>@{username}</span>
+              <span className="hidden sm:inline">·</span>
+              <span>
+                {stats.listCount} {stats.listCount === 1 ? 'list' : 'lists'}
+              </span>
+              <span>·</span>
+              <span>
+                {stats.collectionCount}{' '}
+                {stats.collectionCount === 1 ? 'collection' : 'collections'}
+              </span>
+            </div>
             {profile.bio && (
-              <p className="mt-2 max-w-md text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
+              <p className="mt-3 max-w-lg text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
                 {profile.bio}
               </p>
             )}
           </div>
         </div>
 
-        {/* Public lists */}
-        <h2 className="mb-4 text-lg font-semibold text-zinc-900 dark:text-zinc-100">
-          Public Lists ({lists.length})
-        </h2>
-
-        {lists.length === 0 ? (
-          <div className="rounded-xl border border-dashed border-zinc-300 py-12 text-center dark:border-zinc-700">
-            <p className="text-sm text-zinc-500 dark:text-zinc-400">
-              No public lists yet.
-            </p>
-          </div>
-        ) : (
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {lists.map((l) => (
-              <Link
-                key={l.id}
-                href={`/lists/${l.slug}`}
-                className="group rounded-xl border border-zinc-200 bg-white p-5 transition-colors hover:border-zinc-300 dark:border-zinc-800 dark:bg-zinc-900 dark:hover:border-zinc-700"
-              >
-                {l.coverImage && (
-                  <div className="relative mb-3 h-28 w-full overflow-hidden rounded-lg">
-                    <Image
-                      src={l.coverImage}
-                      alt=""
-                      fill
-                      className="object-cover"
-                      unoptimized
-                    />
-                  </div>
-                )}
-                <div className="mb-2 flex items-center gap-2">
-                  <span
-                    className={`rounded-full px-2 py-0.5 text-[10px] font-medium ${TYPE_COLORS[l.type as ListType]}`}
-                  >
-                    {TYPE_LABELS[l.type as ListType]}
-                  </span>
-                  <span className="text-xs text-zinc-400">
-                    {l.itemCount} {l.itemCount === 1 ? 'item' : 'items'}
-                  </span>
-                </div>
-                <h3 className="text-sm font-semibold text-zinc-900 group-hover:text-zinc-600 dark:text-zinc-100 dark:group-hover:text-zinc-300">
-                  {l.title}
-                </h3>
-                {l.description && (
-                  <p className="mt-1 line-clamp-2 text-xs text-zinc-500 dark:text-zinc-400">
-                    {l.description}
-                  </p>
-                )}
-              </Link>
-            ))}
-          </div>
-        )}
+        {/* Tabs: Lists & Collections */}
+        <ProfileTabs
+          lists={serializedLists}
+          collections={serializedCollections}
+        />
       </div>
     </AppShell>
   )

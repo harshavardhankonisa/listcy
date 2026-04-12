@@ -1,7 +1,6 @@
 import { headers } from 'next/headers'
 import Link from 'next/link'
 import { auth } from '@/api/config/auth'
-import * as dashboardService from '@/api/services/dashboard.service'
 import * as listService from '@/api/services/list.service'
 import type { ListType } from '@/constants/list'
 
@@ -29,7 +28,7 @@ export default async function DashboardPage() {
   if (!session) return null
 
   const [stats, { lists: recentLists }] = await Promise.all([
-    dashboardService.getStats(session.user.id),
+    listService.getDashboardStats(session.user.id),
     listService.getListsByUserIdPaginated(session.user.id, 5, 0),
   ])
 
@@ -130,12 +129,20 @@ export default async function DashboardPage() {
                     {new Date(l.createdAt).toLocaleDateString()}
                   </td>
                   <td className="px-4 py-3">
-                    <Link
-                      href={`/dashboard/lists/${l.slug}/edit`}
-                      className="text-xs font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
-                    >
-                      Edit
-                    </Link>
+                    <div className="flex items-center gap-3">
+                      <Link
+                        href={`/lists/${l.slug}`}
+                        className="text-xs font-medium text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-200"
+                      >
+                        View
+                      </Link>
+                      <Link
+                        href={`/dashboard/lists/${l.slug}/edit`}
+                        className="text-xs font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
+                      >
+                        Edit
+                      </Link>
+                    </div>
                   </td>
                 </tr>
               ))}

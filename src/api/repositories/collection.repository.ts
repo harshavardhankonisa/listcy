@@ -1,4 +1,4 @@
-import { eq, desc, and } from 'drizzle-orm'
+import { eq, desc, and, count } from 'drizzle-orm'
 import { db } from '@/api/config/db'
 import { collection, collectionToList } from '@/api/schemas/collections.schema'
 import { collectionToTag } from '@/api/schemas/tags.schema'
@@ -19,6 +19,32 @@ export async function findByUserId(userId: string) {
     .from(collection)
     .where(eq(collection.userId, userId))
     .orderBy(desc(collection.createdAt))
+}
+
+export async function countPublicByUserId(userId: string) {
+  const rows = await db
+    .select({ count: count() })
+    .from(collection)
+    .where(
+      and(eq(collection.userId, userId), eq(collection.visibility, 'public'))
+    )
+  return rows[0]?.count ?? 0
+}
+
+export async function findPublicByUserId(
+  userId: string,
+  limit = 20,
+  offset = 0
+) {
+  return db
+    .select()
+    .from(collection)
+    .where(
+      and(eq(collection.userId, userId), eq(collection.visibility, 'public'))
+    )
+    .orderBy(desc(collection.createdAt))
+    .limit(limit)
+    .offset(offset)
 }
 
 export async function findPublic(limit = 20, offset = 0) {

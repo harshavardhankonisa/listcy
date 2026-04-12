@@ -1,24 +1,73 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 
-const links = [
-  { href: '/dashboard', label: 'Dashboard', icon: '📊' },
+interface NavLink {
+  href: string
+  label: string
+  icon: string
+  exact?: boolean
+}
+
+const mainLinks: NavLink[] = [
+  { href: '/dashboard', label: 'Overview', icon: '📊', exact: true },
   { href: '/dashboard/lists', label: 'My Lists', icon: '📝' },
+]
+
+const quickLinks: NavLink[] = [
+  {
+    href: '/dashboard/lists/new',
+    label: 'Create List',
+    icon: '➕',
+    exact: true,
+  },
+]
+
+const accountLinks: NavLink[] = [
   { href: '/settings', label: 'Settings', icon: '⚙️' },
 ]
 
 export function DashboardNav() {
   const pathname = usePathname()
+  const [username, setUsername] = useState<string | null>(null)
+
+  useEffect(() => {
+    fetch('/api/user/profile')
+      .then((r) => r.json())
+      .then((data) => {
+        if (data.profile?.username) setUsername(data.profile.username)
+      })
+      .catch(() => {})
+  }, [])
+
+  const profileLink: NavLink[] = username
+    ? [
+        {
+          href: `/users/${username}`,
+          label: 'Your Profile',
+          icon: '👤',
+          exact: true,
+        },
+      ]
+    : []
 
   return (
-    <nav className="flex flex-col gap-1">
-      {links.map(({ href, label, icon }) => {
-        const active =
-          href === '/dashboard'
-            ? pathname === '/dashboard'
-            : pathname.startsWith(href)
+    <nav className="flex flex-col gap-4">
+      <NavGroup links={mainLinks} pathname={pathname} />
+      <NavGroup links={quickLinks} pathname={pathname} />
+      <hr className="border-zinc-200 dark:border-zinc-800" />
+      <NavGroup links={[...profileLink, ...accountLinks]} pathname={pathname} />
+    </nav>
+  )
+}
+
+function NavGroup({ links, pathname }: { links: NavLink[]; pathname: string }) {
+  return (
+    <div className="flex flex-col gap-1">
+      {links.map(({ href, label, icon, exact }) => {
+        const active = exact ? pathname === href : pathname.startsWith(href)
 
         return (
           <Link
@@ -35,6 +84,6 @@ export function DashboardNav() {
           </Link>
         )
       })}
-    </nav>
+    </div>
   )
 }

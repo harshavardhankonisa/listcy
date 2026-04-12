@@ -1,4 +1,6 @@
 import * as userRepo from '@/api/repositories/user.repository'
+import * as listRepo from '@/api/repositories/list.repository'
+import * as collectionRepo from '@/api/repositories/collection.repository'
 import { generateUniqueSlug, usernameFromEmail } from '@/api/utils/slug'
 import type { Theme, Locale, Timezone } from '@/constants/user'
 
@@ -10,6 +12,14 @@ export async function getProfile(userId: string) {
 
 export async function getPublicProfile(username: string) {
   return userRepo.findProfileByUsername(username)
+}
+
+export async function getPublicStats(userId: string) {
+  const [listCount, collectionCount] = await Promise.all([
+    listRepo.countPublicByUserId(userId),
+    collectionRepo.countPublicByUserId(userId),
+  ])
+  return { listCount, collectionCount }
 }
 
 export async function upsertProfile(

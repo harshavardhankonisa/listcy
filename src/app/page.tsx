@@ -34,8 +34,13 @@ export default async function Home() {
               id={l.id}
               slug={l.slug}
               title={l.title}
-              author="User"
-              itemCount={0}
+              author={
+                l.authorDisplayName ??
+                (l.authorUsername ? `@${l.authorUsername}` : 'User')
+              }
+              authorUsername={l.authorUsername}
+              authorAvatarUrl={l.authorAvatarUrl}
+              itemCount={l.itemCount}
               tags={[]}
               timeAgo={timeAgo(l.createdAt)}
               coverImage={l.coverImage}

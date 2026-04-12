@@ -35,6 +35,20 @@ async function enrichList(
   return { ...found, items, tags }
 }
 
+export async function getDashboardStats(userId: string) {
+  const [totalLists, totalItems, publicLists] = await Promise.all([
+    listRepo.countByUserId(userId),
+    listRepo.countItemsByUserId(userId),
+    listRepo.countPublicByUserId(userId),
+  ])
+  return {
+    totalLists,
+    totalItems,
+    publicLists,
+    privateLists: totalLists - publicLists,
+  }
+}
+
 export async function getListsByUserId(userId: string) {
   return listRepo.findByUserId(userId)
 }
@@ -57,7 +71,10 @@ export async function getListsByUserIdPaginated(
 }
 
 export async function getPublicLists(limit = 20, offset = 0) {
-  return listRepo.findPublic(limit, offset)
+  const lists = await listRepo.findPublic(limit, offset)
+  const ids = lists.map((l) => l.id)
+  const itemCounts = await listRepo.itemCountsByListIds(ids)
+  return lists.map((l) => ({ ...l, itemCount: itemCounts[l.id] ?? 0 }))
 }
 
 export async function getPublicListsByUserId(
