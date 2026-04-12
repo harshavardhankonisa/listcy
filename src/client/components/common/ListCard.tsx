@@ -25,6 +25,19 @@ function AuthorLink({
   return <span className={className}>{children}</span>
 }
 
+function VerifiedBadge() {
+  return (
+    <svg
+      className="inline-block h-3.5 w-3.5 text-zinc-500 dark:text-zinc-400"
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      aria-label="Verified"
+    >
+      <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.7 14.3l-3.5-3.5 1.4-1.4 2.1 2.1 5.3-5.3 1.4 1.4-6.7 6.7z" />
+    </svg>
+  )
+}
+
 export interface ListCardProps {
   id: string
   slug: string
@@ -32,6 +45,7 @@ export interface ListCardProps {
   author: string
   authorUsername?: string | null
   authorAvatarUrl?: string | null
+  verified?: boolean
   itemCount: number
   tags: string[]
   timeAgo: string
@@ -44,6 +58,7 @@ export function ListCard({
   author,
   authorUsername,
   authorAvatarUrl,
+  verified = false,
   itemCount,
   tags,
   timeAgo,
@@ -79,9 +94,9 @@ export function ListCard({
               </svg>
             </div>
           )}
-          {/* Item count badge */}
-          <span className="absolute bottom-2 right-2 rounded bg-black/80 px-1.5 py-0.5 text-xs font-medium text-white">
-            {itemCount} {itemCount === 1 ? 'item' : 'items'}
+          {/* Item count badge — YouTube-style overlay */}
+          <span className="absolute bottom-1.5 right-1.5 rounded-sm bg-black/90 px-1 py-px text-[11px] font-medium leading-tight tracking-wide text-white">
+            {itemCount} {itemCount === 1 ? 'ITEM' : 'ITEMS'}
           </span>
         </div>
       </Link>
@@ -115,9 +130,10 @@ export function ListCard({
           {/* Author name — always links to profile */}
           <AuthorLink
             username={authorUsername}
-            className="mt-0.5 text-xs text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-300"
+            className="mt-0.5 flex items-center gap-1 text-xs text-zinc-600 hover:text-zinc-800 dark:text-zinc-400 dark:hover:text-zinc-300"
           >
             {author}
+            {verified && <VerifiedBadge />}
           </AuthorLink>
           <p className="text-xs text-zinc-600 dark:text-zinc-400">
             {tags.length > 0 ? tags[0] : 'General'} · {timeAgo}

@@ -229,3 +229,22 @@ export async function setListTags(
     resolvedTags.map((t) => t.id)
   )
 }
+
+// ── Related Lists ───────────────────────────────────────────────────────
+
+export async function getRelatedLists(
+  listId: string,
+  type: ListType,
+  limit = 6
+) {
+  // Get the list's tag IDs first
+  const listTags = await listRepo.findTagsByListId(listId)
+  const tagIds = listTags.map((t) => t.tagId)
+
+  const related = await listRepo.findRelated(listId, type, tagIds, limit)
+
+  // Enrich with item counts
+  const ids = related.map((l) => l.id)
+  const counts = await listRepo.itemCountsByListIds(ids)
+  return related.map((l) => ({ ...l, itemCount: counts[l.id] ?? 0 }))
+}

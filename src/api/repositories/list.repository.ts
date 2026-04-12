@@ -1,4 +1,4 @@
-import { eq, desc, and, count, sql } from 'drizzle-orm'
+import { eq, desc, and, count, sql, ne, inArray } from 'drizzle-orm'
 import { db } from '@/api/config/db'
 import { list, listItem } from '@/api/schemas/lists.schema'
 import { listToTag } from '@/api/schemas/tags.schema'
@@ -237,4 +237,113 @@ export async function setTags(listId: string, tagIds: string[]) {
 
 export async function findTagsByListId(listId: string) {
   return db.select().from(listToTag).where(eq(listToTag.listId, listId))
+}
+
+/**
+ * Find public lists related to a given list by shared tags or same type.
+ * Excludes the source list itself.
+ */
+export async function findRelated(
+  listId: string,
+  type: ListType,
+  tagIds: string[],
+  limit = 6
+) {
+  // Strategy: prefer lists sharing tags, fall back to same type
+  if (tagIds.length > 0) {
+    const byTags = await db
+      .selectDistinct({
+        id: list.id,
+        slug: list.slug,
+        title: list.title,
+        description: list.description,
+        coverImage: list.coverImage,
+        type: list.type,
+        visibility: list.visibility,
+        userId: list.userId,
+        createdAt: list.createdAt,
+        updatedAt: list.updatedAt,
+        authorUsername: userProfile.username,
+        authorDisplayName: userProfile.displayName,
+        authorAvatarUrl: userProfile.avatarUrl,
+      })
+      .from(list)
+      .innerJoin(listToTag, eq(list.id, listToTag.listId))
+      .leftJoin(userProfile, eq(list.userId, userProfile.userId))
+      .where(
+        and(
+          eq(list.visibility, 'public'),
+          ne(list.id, listId),
+          inArray(listToTag.tagId, tagIds)
+        )
+      )
+      .orderBy(desc(list.createdAt))
+      .limit(limit)
+
+    if (byTags.length >= limit) return byTags
+
+    // Fill remaining slots with same-type lists
+    const existingIds = [listId, ...byTags.map((l) => l.id)]
+    const byType = await db
+      .select({
+        id: list.id,
+        slug: list.slug,
+        title: list.title,
+        description: list.description,
+        coverImage: list.coverImage,
+        type: list.type,
+        visibility: list.visibility,
+        userId: list.userId,
+        createdAt: list.createdAt,
+        updatedAt: list.updatedAt,
+        authorUsername: userProfile.username,
+        authorDisplayName: userProfile.displayName,
+        authorAvatarUrl: userProfile.avatarUrl,
+      })
+      .from(list)
+      .leftJoin(userProfile, eq(list.userId, userProfile.userId))
+      .where(
+        and(
+          eq(list.visibility, 'public'),
+          eq(list.type, type),
+          sql`${list.id} NOT IN (${sql.join(
+            existingIds.map((id) => sql`${id}`),
+            sql`, `
+          )})`
+        )
+      )
+      .orderBy(desc(list.createdAt))
+      .limit(limit - byTags.length)
+
+    return [...byTags, ...byType]
+  }
+
+  // No tags — just match by type
+  return db
+    .select({
+      id: list.id,
+      slug: list.slug,
+      title: list.title,
+      description: list.description,
+      coverImage: list.coverImage,
+      type: list.type,
+      visibility: list.visibility,
+      userId: list.userId,
+      createdAt: list.createdAt,
+      updatedAt: list.updatedAt,
+      authorUsername: userProfile.username,
+      authorDisplayName: userProfile.displayName,
+      authorAvatarUrl: userProfile.avatarUrl,
+    })
+    .from(list)
+    .leftJoin(userProfile, eq(list.userId, userProfile.userId))
+    .where(
+      and(
+        eq(list.visibility, 'public'),
+        eq(list.type, type),
+        ne(list.id, listId)
+      )
+    )
+    .orderBy(desc(list.createdAt))
+    .limit(limit)
 }

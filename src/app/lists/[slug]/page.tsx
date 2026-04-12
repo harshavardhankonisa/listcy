@@ -7,6 +7,8 @@ import { auth } from '@/api/config/auth'
 import * as listService from '@/api/services/list.service'
 import * as userService from '@/api/services/user.service'
 import { AppShell } from '@/client/components/layout/AppShell'
+import { ListActionBar } from '@/client/components/common/ListActionBar'
+import { FollowButton } from '@/client/components/common/FollowButton'
 import type { ListType } from '@/constants/list'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -65,12 +67,14 @@ export default async function PublicListPage({ params }: Props) {
   if (!list) notFound()
 
   const type = list.type as ListType
-  const profile = await userService.getProfile(list.userId)
 
-  // Other lists by this creator (sidebar)
-  const otherLists = (
-    await listService.getPublicListsByUserId(list.userId, 5, 0)
-  ).filter((l) => l.id !== list.id)
+  const [profile, creatorLists, relatedLists] = await Promise.all([
+    userService.getProfile(list.userId),
+    listService.getPublicListsByUserId(list.userId, 5, 0),
+    listService.getRelatedLists(list.id, type, 6),
+  ])
+
+  const otherLists = creatorLists.filter((l) => l.id !== list.id)
 
   return (
     <AppShell>
@@ -133,6 +137,11 @@ export default async function PublicListPage({ params }: Props) {
                 ))}
               </div>
             )}
+
+            {/* Action bar */}
+            <div className="mt-4">
+              <ListActionBar listId={list.id} listTitle={list.title} />
+            </div>
           </div>
 
           {/* Items */}
@@ -236,12 +245,16 @@ export default async function PublicListPage({ params }: Props) {
                   {profile.bio}
                 </p>
               )}
+              {/* Follow button */}
+              <div className="mt-3">
+                <FollowButton userId={profile.userId} />
+              </div>
             </div>
           )}
 
           {/* More lists by this creator */}
           {otherLists.length > 0 && (
-            <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+            <div className="mb-6 rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
               <h3 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                 {profile?.username ? (
                   <Link
@@ -269,6 +282,72 @@ export default async function PublicListPage({ params }: Props) {
                     <span className="min-w-0 truncate text-sm text-zinc-700 group-hover:text-zinc-900 dark:text-zinc-300 dark:group-hover:text-zinc-100">
                       {l.title}
                     </span>
+                  </Link>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Related Lists (Up Next) */}
+          {relatedLists.length > 0 && (
+            <div className="rounded-xl border border-zinc-200 bg-white p-5 dark:border-zinc-800 dark:bg-zinc-900">
+              <h3 className="mb-3 text-sm font-semibold text-zinc-900 dark:text-zinc-100">
+                Up Next
+              </h3>
+              <div className="flex flex-col gap-3">
+                {relatedLists.map((r) => (
+                  <Link
+                    key={r.id}
+                    href={`/lists/${r.slug}`}
+                    className="group flex gap-3 rounded-lg p-2 transition-colors hover:bg-zinc-50 dark:hover:bg-zinc-800/50"
+                  >
+                    {/* Thumbnail */}
+                    <div className="relative h-16 w-28 shrink-0 overflow-hidden rounded-lg bg-zinc-200 dark:bg-zinc-800">
+                      {r.coverImage ? (
+                        <Image
+                          src={r.coverImage}
+                          alt=""
+                          fill
+                          className="object-cover"
+                          unoptimized
+                        />
+                      ) : (
+                        <div className="flex h-full w-full items-center justify-center">
+                          <svg
+                            className="h-5 w-5 text-zinc-400 dark:text-zinc-600"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                            strokeWidth={1}
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M8.25 6.75h12M8.25 12h12m-12 5.25h12M3.75 6.75h.007v.008H3.75V6.75zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zM3.75 12h.007v.008H3.75V12zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0zm-.375 5.25h.007v.008H3.75v-.008zm.375 0a.375.375 0 11-.75 0 .375.375 0 01.75 0z"
+                            />
+                          </svg>
+                        </div>
+                      )}
+                      <span className="absolute bottom-1 right-1 rounded bg-black/80 px-1 py-0.5 text-[10px] font-medium text-white">
+                        {r.itemCount} items
+                      </span>
+                    </div>
+                    {/* Info */}
+                    <div className="flex min-w-0 flex-col">
+                      <span className="line-clamp-2 text-sm font-medium text-zinc-900 group-hover:text-zinc-600 dark:text-zinc-100 dark:group-hover:text-zinc-300">
+                        {r.title}
+                      </span>
+                      {r.authorDisplayName && (
+                        <span className="mt-0.5 text-xs text-zinc-500 dark:text-zinc-400">
+                          {r.authorDisplayName}
+                        </span>
+                      )}
+                      <span
+                        className={`mt-1 self-start rounded px-1.5 py-0.5 text-[10px] font-medium ${TYPE_COLORS[r.type as ListType]}`}
+                      >
+                        {TYPE_LABELS[r.type as ListType]}
+                      </span>
+                    </div>
                   </Link>
                 ))}
               </div>

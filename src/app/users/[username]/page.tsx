@@ -86,8 +86,17 @@ export default async function ProfilePage({ params }: Props) {
 
           {/* Info */}
           <div className="flex-1 px-4 sm:px-0 sm:pt-2">
-            <h1 className="text-2xl font-bold text-zinc-900 dark:text-zinc-100">
+            <h1 className="flex items-center gap-2 text-2xl font-bold text-zinc-900 dark:text-zinc-100">
               {displayName}
+              {/* Verified badge (mocked) */}
+              <svg
+                className="h-5 w-5 text-zinc-500 dark:text-zinc-400"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                aria-label="Verified"
+              >
+                <path d="M12 2C6.5 2 2 6.5 2 12s4.5 10 10 10 10-4.5 10-10S17.5 2 12 2zm-1.7 14.3l-3.5-3.5 1.4-1.4 2.1 2.1 5.3-5.3 1.4 1.4-6.7 6.7z" />
+              </svg>
             </h1>
             <div className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-zinc-500 dark:text-zinc-400">
               <span>@{username}</span>
