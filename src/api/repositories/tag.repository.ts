@@ -1,6 +1,9 @@
+import 'server-only'
+
 import { eq, inArray } from 'drizzle-orm'
 import { db } from '@/api/config/db'
 import { tag } from '@/api/schemas/tags.schema'
+import { slugify } from '@/api/utils/slug'
 
 export async function findAll() {
   return db.select().from(tag).orderBy(tag.name)
@@ -31,10 +34,7 @@ export async function create(data: { name: string; slug: string }) {
 }
 
 export async function findOrCreate(name: string) {
-  const slug = name
-    .toLowerCase()
-    .replace(/[^a-z0-9]+/g, '-')
-    .replace(/^-|-$/g, '')
+  const slug = slugify(name)
 
   const existing = await findBySlug(slug)
   if (existing) return existing

@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { auth } from '@/api/config/auth'
 import { NextResponse } from 'next/server'
 

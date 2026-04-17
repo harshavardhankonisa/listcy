@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { eq } from 'drizzle-orm'
 import { db } from '@/api/config/db'
 import { user } from '@/api/schemas/auth.schema'

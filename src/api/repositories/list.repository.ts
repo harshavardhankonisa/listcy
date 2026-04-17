@@ -1,4 +1,6 @@
-import { eq, desc, and, count, sql, ne, inArray } from 'drizzle-orm'
+import 'server-only'
+
+import { eq, desc, and, count, ne, inArray, notInArray } from 'drizzle-orm'
 import { db } from '@/api/config/db'
 import { list, listItem } from '@/api/schemas/lists.schema'
 import { listToTag } from '@/api/schemas/tags.schema'
@@ -135,7 +137,8 @@ export async function itemCountsByListIds(listIds: string[]) {
       count: count(),
     })
     .from(listItem)
-    .where(sql`${listItem.listId} IN ${listIds}`)
+    // inArray generates a safe parameterized IN clause; raw sql`IN` is not type-safe
+    .where(inArray(listItem.listId, listIds))
     .groupBy(listItem.listId)
   const map: Record<string, number> = {}
   for (const r of rows) map[r.listId] = r.count
@@ -300,10 +303,8 @@ export async function findRelated(
         and(
           eq(list.visibility, 'public'),
           eq(list.type, type),
-          sql`${list.id} NOT IN (${sql.join(
-            existingIds.map((id) => sql`${id}`),
-            sql`, `
-          )})`
+          // notInArray generates a safe parameterized NOT IN clause
+          notInArray(list.id, existingIds)
         )
       )
       .orderBy(desc(list.createdAt))

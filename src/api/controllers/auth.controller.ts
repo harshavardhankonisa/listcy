@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { auth } from '@/api/config/auth'
 import { toNextJsHandler } from 'better-auth/next-js'
 import {

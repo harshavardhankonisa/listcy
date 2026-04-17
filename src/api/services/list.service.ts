@@ -1,3 +1,5 @@
+import 'server-only'
+
 import * as listRepo from '@/api/repositories/list.repository'
 import * as tagRepo from '@/api/repositories/tag.repository'
 import { generateUniqueSlug } from '@/api/utils/slug'

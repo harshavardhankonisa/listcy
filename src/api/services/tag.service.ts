@@ -1,3 +1,5 @@
+import 'server-only'
+
 import * as tagRepo from '@/api/repositories/tag.repository'
 
 export async function getAllTags() {

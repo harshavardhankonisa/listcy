@@ -1,3 +1,5 @@
+import 'server-only'
+
 import { eq, desc, and, count } from 'drizzle-orm'
 import { db } from '@/api/config/db'
 import { collection, collectionToList } from '@/api/schemas/collections.schema'

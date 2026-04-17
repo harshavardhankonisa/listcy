@@ -1,3 +1,5 @@
+import 'server-only'
+
 import * as userRepo from '@/api/repositories/user.repository'
 import * as listRepo from '@/api/repositories/list.repository'
 import * as collectionRepo from '@/api/repositories/collection.repository'
@@ -6,10 +8,6 @@ import type { Theme, Locale, Timezone } from '@/common/constants/user'
 
 // Profile
 
-/**
- * If the profile has no username, auto-generate one from the user's email
- * or name, persist it, and return the updated profile.
- */
 async function ensureUsername(
   profile: NonNullable<Awaited<ReturnType<typeof userRepo.findProfileByUserId>>>
 ) {
