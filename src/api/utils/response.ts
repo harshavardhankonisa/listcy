@@ -71,3 +71,29 @@ export async function parseBody<T = unknown>(
     return { ok: false, response: badRequest('Invalid JSON body') }
   }
 }
+
+/**
+ * Wraps a controller body so unhandled service or database errors always
+ * return a typed JSON 500 instead of crashing the route handler.
+ *
+ * WHY HERE: Every controller delegates business logic to service functions
+ * that can throw (DB connection failure, ORM error, unexpected null
+ * dereference). Without this wrapper those throws propagate as unhandled
+ * Promise rejections — Next.js then returns a raw HTML error page, not JSON,
+ * so API clients receive an unparseable response with no actionable context.
+ * Centralising the catch here means we only write it once; every controller
+ * that calls withController gets the protection automatically without
+ * cluttering individual functions with repetitive try/catch blocks.
+ */
+export async function withController(
+  fn: () => Promise<NextResponse>
+): Promise<NextResponse> {
+  try {
+    return await fn()
+  } catch (err) {
+    // Log server-side so the real cause is observable; never expose raw
+    // error details to clients (could leak stack traces or DB schema info).
+    console.error('[API] Unhandled controller error:', err)
+    return serverError()
+  }
+}

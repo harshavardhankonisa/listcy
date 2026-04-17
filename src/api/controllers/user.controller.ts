@@ -14,29 +14,38 @@ import type { ApiResponse } from '@/api/types'
 // ── Profile ───────────────────────────────────────────────────────────────────
 
 export async function getProfile(): ApiResponse {
-  const { session, error } = await requireSession()
-  if (error) return error
+  // withController: ensures any service/DB throw returns a typed JSON 500
+  // rather than crashing the route with an HTML error page. See response.ts.
+  return res.withController(async () => {
+    const { session, error } = await requireSession()
+    if (error) return error
 
-  const profile = await userService.getProfile(session.user.id)
-  return res.ok({ profile })
+    const profile = await userService.getProfile(session.user.id)
+    return res.ok({ profile })
+  })
 }
 
 export async function updateProfile(request: Request): ApiResponse {
-  const { session, error } = await requireSession()
-  if (error) return error
+  return res.withController(async () => {
+    const { session, error } = await requireSession()
+    if (error) return error
 
-  const rl = await rateLimit(session.user.id, RATE_LIMITS.write)
-  if (!rl.allowed) return res.tooManyRequests(rl)
+    const rl = await rateLimit(session.user.id, RATE_LIMITS.write)
+    if (!rl.allowed) return res.tooManyRequests(rl)
 
-  const body = await res.parseBody(request)
-  if (!body.ok) return body.response
+    const body = await res.parseBody(request)
+    if (!body.ok) return body.response
 
-  const parsed = updateProfileSchema.safeParse(body.data)
-  if (!parsed.success)
-    return res.badRequest('Validation failed', z.flattenError(parsed.error))
+    const parsed = updateProfileSchema.safeParse(body.data)
+    if (!parsed.success)
+      return res.badRequest('Validation failed', z.flattenError(parsed.error))
 
-  const profile = await userService.upsertProfile(session.user.id, parsed.data)
-  return res.ok({ profile })
+    const profile = await userService.upsertProfile(
+      session.user.id,
+      parsed.data
+    )
+    return res.ok({ profile })
+  })
 }
 
 // ── Public Profile ────────────────────────────────────────────────────────────
@@ -45,38 +54,44 @@ export async function getPublicProfile(
   _request: Request,
   username: string
 ): ApiResponse {
-  const profile = await userService.getPublicProfile(username)
-  if (!profile) return res.notFound('User not found')
-  return res.ok({ profile })
+  return res.withController(async () => {
+    const profile = await userService.getPublicProfile(username)
+    if (!profile) return res.notFound('User not found')
+    return res.ok({ profile })
+  })
 }
 
 // ── Settings ──────────────────────────────────────────────────────────────────
 
 export async function getSettings(): ApiResponse {
-  const { session, error } = await requireSession()
-  if (error) return error
+  return res.withController(async () => {
+    const { session, error } = await requireSession()
+    if (error) return error
 
-  const settings = await userService.getSettings(session.user.id)
-  return res.ok({ settings })
+    const settings = await userService.getSettings(session.user.id)
+    return res.ok({ settings })
+  })
 }
 
 export async function updateSettings(request: Request): ApiResponse {
-  const { session, error } = await requireSession()
-  if (error) return error
+  return res.withController(async () => {
+    const { session, error } = await requireSession()
+    if (error) return error
 
-  const rl = await rateLimit(session.user.id, RATE_LIMITS.write)
-  if (!rl.allowed) return res.tooManyRequests(rl)
+    const rl = await rateLimit(session.user.id, RATE_LIMITS.write)
+    if (!rl.allowed) return res.tooManyRequests(rl)
 
-  const body = await res.parseBody(request)
-  if (!body.ok) return body.response
+    const body = await res.parseBody(request)
+    if (!body.ok) return body.response
 
-  const parsed = updateSettingsSchema.safeParse(body.data)
-  if (!parsed.success)
-    return res.badRequest('Validation failed', z.flattenError(parsed.error))
+    const parsed = updateSettingsSchema.safeParse(body.data)
+    if (!parsed.success)
+      return res.badRequest('Validation failed', z.flattenError(parsed.error))
 
-  const settings = await userService.upsertSettings(
-    session.user.id,
-    parsed.data
-  )
-  return res.ok({ settings })
+    const settings = await userService.upsertSettings(
+      session.user.id,
+      parsed.data
+    )
+    return res.ok({ settings })
+  })
 }

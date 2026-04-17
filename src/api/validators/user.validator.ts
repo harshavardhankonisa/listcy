@@ -3,6 +3,7 @@ import 'server-only'
 import { z } from 'zod'
 import { THEMES, LOCALES, TIMEZONES } from '@/constants/user'
 import type { Theme, Locale, Timezone } from '@/constants/user'
+import { stripHtml } from './text'
 
 // Spread removes readonly so z.enum() receives a mutable non-empty tuple,
 // cast to the literal union preserves exact output types.
@@ -21,8 +22,15 @@ export const updateProfileSchema = z
         'Username must be lowercase alphanumeric, hyphens, or underscores'
       )
       .nullish(),
-    displayName: z.string().min(1).max(100).trim().nullish(),
-    bio: z.string().max(500).trim().nullish(),
+    // stripHtml applied — see text.ts for why all user-supplied text is sanitized
+    displayName: z
+      .string()
+      .min(1)
+      .max(100)
+      .trim()
+      .transform(stripHtml)
+      .nullish(),
+    bio: z.string().max(500).trim().transform(stripHtml).nullish(),
     phone: z.string().max(30).trim().nullish(),
     timezone: timezoneSchema.nullish(),
     locale: localeSchema.nullish(),

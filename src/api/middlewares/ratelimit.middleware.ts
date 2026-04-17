@@ -91,11 +91,41 @@ export async function rateLimit(
 // ── IP extraction ─────────────────────────────────────────────────────────────
 
 /**
- * Extract the real client IP from the request headers.
- * Trusts x-forwarded-for set by Cloudflare / reverse proxy.
+ * Extract the real client IP from request headers.
+ *
+ * WHY THE ORDER MATTERS: x-forwarded-for is a client-controlled header — any
+ * requester can prepend a fake IP to the list before it reaches the origin.
+ * Trusting the first entry (as the previous implementation did) meant an
+ * attacker could set x-forwarded-for: 1.2.3.4 and bypass per-IP rate limits
+ * by rotating the spoofed value on every request.
+ *
+ * CF-Connecting-IP is written by Cloudflare on every inbound request and
+ * stripped/replaced for traffic coming through the proxy — clients have no
+ * way to control its value. Using it as the primary source gives us a
+ * tamper-proof IP when the app sits behind Cloudflare.
+ *
+ * x-real-ip is set by nginx/Vercel infrastructure (single value, not a chain)
+ * and serves as a reliable fallback when Cloudflare is not in the path.
+ *
+ * x-forwarded-for is kept as a last resort only, since it is better than
+ * nothing in local/dev environments where neither of the above headers exist.
+ *
+ * WHERE: Used as the rate-limit identifier for public endpoints that have no
+ * authenticated userId to key on (e.g. /tags). Not used for write endpoints —
+ * those key on session.user.id, which cannot be spoofed.
  */
 export function getIp(request: Request): string {
+  // Cloudflare overwrites this on every request — cannot be spoofed.
+  const cfIp = request.headers.get('cf-connecting-ip')
+  if (cfIp) return cfIp
+
+  // Set by nginx / Vercel edge — single value, more reliable than a chain.
+  const realIp = request.headers.get('x-real-ip')
+  if (realIp) return realIp
+
+  // Last resort: take the first entry; acceptable in local/dev environments.
   const forwarded = request.headers.get('x-forwarded-for')
   if (forwarded) return forwarded.split(',')[0].trim()
-  return request.headers.get('x-real-ip') ?? 'unknown'
+
+  return 'unknown'
 }

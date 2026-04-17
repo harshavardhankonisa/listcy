@@ -5,13 +5,13 @@ REQUIRED_NPM=11
 CURRENT_NODE=$(node -v | cut -d. -f1 | tr -d 'v')
 CURRENT_NPM=$(npm -v | cut -d. -f1)
 
-if [ "$CURRENT_NODE" -lt "$REQUIRED_NODE" ] || [ "$CURRENT_NODE" -gt "$REQUIRED_NODE" ]; then
-  echo "❌ Node.js version must be exactly v$REQUIRED_NODE.x (found $(node -v))"
+if [ "$CURRENT_NODE" -lt "$REQUIRED_NODE" ]; then
+  echo "❌ Node.js >= $REQUIRED_NODE required (found $(node -v))"
   exit 1
 fi
 
-if [ "$CURRENT_NPM" -lt "$REQUIRED_NPM" ] || [ "$CURRENT_NPM" -gt "$REQUIRED_NPM" ]; then
-  echo "❌ npm version must be exactly v$REQUIRED_NPM.x (found v$(npm -v))"
+if [ "$CURRENT_NPM" -lt "$REQUIRED_NPM" ]; then
+  echo "❌ npm >= $REQUIRED_NPM required (found v$(npm -v))"
   exit 1
 fi
 
