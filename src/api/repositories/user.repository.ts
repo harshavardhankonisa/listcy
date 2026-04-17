@@ -2,7 +2,7 @@ import { eq } from 'drizzle-orm'
 import { db } from '@/api/config/db'
 import { user } from '@/api/schemas/auth.schema'
 import { userProfile, userSettings } from '@/api/schemas/users.schema'
-import type { Theme, Locale, Timezone } from '@/constants/user'
+import type { Theme, Locale, Timezone } from '@/common/constants/user'
 
 export async function findUserById(userId: string) {
   const rows = await db.select().from(user).where(eq(user.id, userId)).limit(1)

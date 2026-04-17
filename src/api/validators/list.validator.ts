@@ -1,8 +1,8 @@
 import 'server-only'
 
 import { z } from 'zod'
-import { VISIBILITIES, LIST_TYPES } from '@/constants/list'
-import type { Visibility, ListType } from '@/constants/list'
+import { VISIBILITIES, LIST_TYPES } from '@/common/constants/list'
+import type { Visibility, ListType } from '@/common/constants/list'
 import { titleSchema, descriptionSchema, urlSchema, tagsSchema } from './text'
 
 // Spread removes readonly so z.enum() receives a mutable non-empty tuple;

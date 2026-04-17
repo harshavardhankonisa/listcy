@@ -11,16 +11,16 @@ import {
 import * as res from '@/api/utils/response'
 import type { ApiResponse } from '@/api/types'
 
-// ── Profile ───────────────────────────────────────────────────────────────────
+// Profile
 
 export async function getProfile(): ApiResponse {
-  // withController: ensures any service/DB throw returns a typed JSON 500
-  // rather than crashing the route with an HTML error page. See response.ts.
   return res.withController(async () => {
     const { session, error } = await requireSession()
     if (error) return error
 
     const profile = await userService.getProfile(session.user.id)
+
+    if (!profile) return res.notFound('Profile not found')
     return res.ok({ profile })
   })
 }
@@ -48,7 +48,7 @@ export async function updateProfile(request: Request): ApiResponse {
   })
 }
 
-// ── Public Profile ────────────────────────────────────────────────────────────
+// Public Profile
 
 export async function getPublicProfile(
   _request: Request,
@@ -61,7 +61,7 @@ export async function getPublicProfile(
   })
 }
 
-// ── Settings ──────────────────────────────────────────────────────────────────
+// Settings
 
 export async function getSettings(): ApiResponse {
   return res.withController(async () => {
@@ -69,6 +69,8 @@ export async function getSettings(): ApiResponse {
     if (error) return error
 
     const settings = await userService.getSettings(session.user.id)
+
+    if (!settings) return res.notFound('Settings not found')
     return res.ok({ settings })
   })
 }

@@ -1,7 +1,10 @@
 import 'server-only'
 
 import { z } from 'zod'
-import { requireSession } from '@/api/middlewares/auth.middleware'
+import {
+  requireSession,
+  getOptionalSession,
+} from '@/api/middlewares/auth.middleware'
 import { rateLimit, RATE_LIMITS } from '@/api/middlewares/ratelimit.middleware'
 import * as collectionService from '@/api/services/collection.service'
 import {
@@ -14,12 +17,9 @@ import * as res from '@/api/utils/response'
 import { parsePagination } from '@/api/utils/pagination'
 import type { ApiResponse } from '@/api/types'
 
-// ── Collections ───────────────────────────────────────────────────────────────
+// Collections
 
 export async function getCollections(request: Request): ApiResponse {
-  // withController: catches unhandled service/DB throws and returns a typed
-  // JSON 500. Without it, any service throw produces a raw HTML crash page
-  // that API clients cannot parse. See response.ts for the full rationale.
   return res.withController(async () => {
     const url = new URL(request.url)
 
@@ -70,19 +70,7 @@ export async function getCollection(
   id: string
 ): ApiResponse {
   return res.withController(async () => {
-    let requesterId: string | null = null
-    try {
-      const { session } = await requireSession()
-      requesterId = session?.user?.id ?? null
-    } catch (err) {
-      // Session check threw unexpectedly (e.g. auth DB unreachable).
-      // Proceed as unauthenticated — public collections remain accessible
-      // even when auth is degraded. Logged for observability.
-      console.error(
-        '[API] Optional session check failed in getCollection:',
-        err
-      )
-    }
+    const requesterId = await getOptionalSession()
 
     const collection = await collectionService.getCollectionById(
       id,
@@ -116,8 +104,7 @@ export async function updateCollection(
       session.user.id,
       parsed.data
     )
-    // No prior existence check — null could be "missing" or "not owned".
-    // 404 is used to avoid confirming whether the id exists to this caller.
+
     if (!collection) return res.notFound('Collection not found')
     return res.ok({ collection })
   })
@@ -138,13 +125,13 @@ export async function deleteCollection(
       id,
       session.user.id
     )
-    // Same reasoning as updateCollection — ambiguous null, use 404.
+
     if (!deleted) return res.notFound('Collection not found')
     return res.ok({ success: true })
   })
 }
 
-// ── Collection → Lists ────────────────────────────────────────────────────────
+// Collection → Lists
 
 export async function addListToCollection(
   request: Request,

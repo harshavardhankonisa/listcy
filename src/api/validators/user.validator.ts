@@ -1,8 +1,8 @@
 import 'server-only'
 
 import { z } from 'zod'
-import { THEMES, LOCALES, TIMEZONES } from '@/constants/user'
-import type { Theme, Locale, Timezone } from '@/constants/user'
+import { THEMES, LOCALES, TIMEZONES } from '@/common/constants/user'
+import type { Theme, Locale, Timezone } from '@/common/constants/user'
 import { stripHtml } from './text'
 
 // Spread removes readonly so z.enum() receives a mutable non-empty tuple,

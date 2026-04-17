@@ -1,8 +1,8 @@
 import 'server-only'
 
 import { z } from 'zod'
-import { VISIBILITIES } from '@/constants/list'
-import type { Visibility } from '@/constants/list'
+import { VISIBILITIES } from '@/common/constants/list'
+import type { Visibility } from '@/common/constants/list'
 import { titleSchema, descriptionSchema, urlSchema, tagsSchema } from './text'
 
 // Same pattern as list.validator.ts — derived from constants so a new

@@ -8,7 +8,7 @@ import {
   useLayoutEffect,
   useState,
 } from 'react'
-import { THEMES, type Theme } from '@/constants/user'
+import { THEMES, type Theme } from '@/common/constants/user'
 
 // useLayoutEffect fires synchronously after React mutates the DOM but before
 // the browser paints — that's the only window where we can re-apply the dark

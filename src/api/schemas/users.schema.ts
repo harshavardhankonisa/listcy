@@ -8,7 +8,7 @@ import {
   uniqueIndex,
 } from 'drizzle-orm/pg-core'
 import { user } from './auth.schema'
-import type { Theme, Locale, Timezone } from '@/constants/user'
+import type { Theme, Locale, Timezone } from '@/common/constants/user'
 
 export const userProfile = pgTable(
   'user_profile',

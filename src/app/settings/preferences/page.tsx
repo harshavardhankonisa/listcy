@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from 'react'
 import { useTheme } from '@/client/components/providers/ThemeProvider'
-import { THEMES, type Theme } from '@/constants/user'
+import { THEMES, type Theme } from '@/common/constants/user'
 
 interface Settings {
   theme: Theme
