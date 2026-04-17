@@ -4,7 +4,7 @@ import * as collectionRepo from '@/api/repositories/collection.repository'
 import { generateUniqueSlug, usernameFromEmail } from '@/api/utils/slug'
 import type { Theme, Locale, Timezone } from '@/common/constants/user'
 
-// ── Profile ─────────────────────────────────────────────────────────────
+// Profile
 
 /**
  * If the profile has no username, auto-generate one from the user's email
@@ -15,7 +15,6 @@ async function ensureUsername(
 ) {
   if (profile.username) return profile
 
-  // Look up the auth user to get email / name for slug generation
   const authUser = await userRepo.findUserById(profile.userId)
   const base = authUser?.email
     ? usernameFromEmail(authUser.email)
@@ -66,7 +65,7 @@ export async function upsertProfile(
   })
 }
 
-// ── Settings ────────────────────────────────────────────────────────────
+// Settings
 
 export async function getSettings(userId: string) {
   return userRepo.findSettingsByUserId(userId)
@@ -89,7 +88,7 @@ export async function upsertSettings(
   return userRepo.createSettings(userId)
 }
 
-// ── Bootstrap ───────────────────────────────────────────────────────────
+// Bootstrap
 
 export async function bootstrapUserData(
   userId: string,

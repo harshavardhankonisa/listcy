@@ -3,8 +3,6 @@ import * as tagRepo from '@/api/repositories/tag.repository'
 import { generateUniqueSlug } from '@/api/utils/slug'
 import type { Visibility, ListType } from '@/common/constants/list'
 
-// ── Lookups ─────────────────────────────────────────────────────────────
-
 export async function getListById(id: string, requesterId?: string | null) {
   const found = await listRepo.findById(id)
   return found ? enrichList(found, requesterId) : null
@@ -88,8 +86,6 @@ export async function getPublicListsByUserId(
   return lists.map((l) => ({ ...l, itemCount: itemCounts[l.id] ?? 0 }))
 }
 
-// ── Create / Update / Delete ────────────────────────────────────────────
-
 export async function createList(
   userId: string,
   data: {
@@ -132,12 +128,10 @@ export async function updateList(
 ) {
   const { tags: tagNames, ...fields } = data
 
-  // If title changed, regenerate slug
   const updateData: Record<string, unknown> = { ...fields }
   if (fields.title) {
     updateData.slug = await generateUniqueSlug(fields.title, async (s) => {
       const existing = await listRepo.findBySlug(s)
-      // Allow the same slug if it belongs to this list
       return existing !== null && existing.id !== id
     })
   }
@@ -230,20 +224,18 @@ export async function setListTags(
   )
 }
 
-// ── Related Lists ───────────────────────────────────────────────────────
+// Related Lists
 
 export async function getRelatedLists(
   listId: string,
   type: ListType,
   limit = 6
 ) {
-  // Get the list's tag IDs first
   const listTags = await listRepo.findTagsByListId(listId)
   const tagIds = listTags.map((t) => t.tagId)
 
   const related = await listRepo.findRelated(listId, type, tagIds, limit)
 
-  // Enrich with item counts
   const ids = related.map((l) => l.id)
   const counts = await listRepo.itemCountsByListIds(ids)
   return related.map((l) => ({ ...l, itemCount: counts[l.id] ?? 0 }))

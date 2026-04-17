@@ -5,8 +5,6 @@ import { VISIBILITIES } from '@/common/constants/list'
 import type { Visibility } from '@/common/constants/list'
 import { titleSchema, descriptionSchema, urlSchema, tagsSchema } from './text'
 
-// Same pattern as list.validator.ts — derived from constants so a new
-// visibility value in src/constants/list.ts propagates here automatically.
 const visibilitySchema = z.enum([...VISIBILITIES] as [
   Visibility,
   ...Visibility[],

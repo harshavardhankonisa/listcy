@@ -239,17 +239,12 @@ export async function findTagsByListId(listId: string) {
   return db.select().from(listToTag).where(eq(listToTag.listId, listId))
 }
 
-/**
- * Find public lists related to a given list by shared tags or same type.
- * Excludes the source list itself.
- */
 export async function findRelated(
   listId: string,
   type: ListType,
   tagIds: string[],
   limit = 6
 ) {
-  // Strategy: prefer lists sharing tags, fall back to same type
   if (tagIds.length > 0) {
     const byTags = await db
       .selectDistinct({
@@ -282,7 +277,6 @@ export async function findRelated(
 
     if (byTags.length >= limit) return byTags
 
-    // Fill remaining slots with same-type lists
     const existingIds = [listId, ...byTags.map((l) => l.id)]
     const byType = await db
       .select({
@@ -318,7 +312,6 @@ export async function findRelated(
     return [...byTags, ...byType]
   }
 
-  // No tags — just match by type
   return db
     .select({
       id: list.id,

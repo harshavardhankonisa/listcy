@@ -7,6 +7,8 @@ export type {
   SessionUser,
 } from './api.types'
 
+export type { AuthSession, RequireSessionResult } from './auth.types'
+
 export type {
   SlugContext,
   SlugItemContext,

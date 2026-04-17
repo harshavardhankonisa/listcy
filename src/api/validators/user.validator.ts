@@ -5,8 +5,6 @@ import { THEMES, LOCALES, TIMEZONES } from '@/common/constants/user'
 import type { Theme, Locale, Timezone } from '@/common/constants/user'
 import { stripHtml } from './text'
 
-// Spread removes readonly so z.enum() receives a mutable non-empty tuple,
-// cast to the literal union preserves exact output types.
 const themeSchema = z.enum([...THEMES] as [Theme, ...Theme[]])
 const localeSchema = z.enum([...LOCALES] as [Locale, ...Locale[]])
 const timezoneSchema = z.enum([...TIMEZONES] as [Timezone, ...Timezone[]])
@@ -22,7 +20,6 @@ export const updateProfileSchema = z
         'Username must be lowercase alphanumeric, hyphens, or underscores'
       )
       .nullish(),
-    // stripHtml applied — see text.ts for why all user-supplied text is sanitized
     displayName: z
       .string()
       .min(1)

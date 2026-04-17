@@ -8,8 +8,7 @@ import 'server-only'
  * no circular references, no Next.js-specific types.
  */
 
-// ── Pagination ────────────────────────────────────────────────────────────────
-
+// Pagination
 export interface PaginationParams {
   limit: number
   offset: number
@@ -22,14 +21,14 @@ export interface PaginatedResponse<T> {
   total?: number
 }
 
-// ── Errors ────────────────────────────────────────────────────────────────────
+// Errors
 
 export interface ApiError {
   error: string
   details?: unknown
 }
 
-// ── Rate limiting ─────────────────────────────────────────────────────────────
+// Rate limiting
 
 export interface RateLimitConfig {
   /** Time window in milliseconds */
@@ -46,7 +45,7 @@ export interface RateLimitInfo {
   limit: number
 }
 
-// ── Session ───────────────────────────────────────────────────────────────────
+// Session
 
 /** Minimal user shape extracted from a Better Auth session. */
 export interface SessionUser {
