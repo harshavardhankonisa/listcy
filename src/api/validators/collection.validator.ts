@@ -1,9 +1,16 @@
 import 'server-only'
 
 import { z } from 'zod'
+import { VISIBILITIES } from '@/constants/list'
+import type { Visibility } from '@/constants/list'
 import { titleSchema, descriptionSchema, urlSchema, tagsSchema } from './text'
 
-const visibilitySchema = z.enum(['public', 'unlisted', 'private'])
+// Same pattern as list.validator.ts — derived from constants so a new
+// visibility value in src/constants/list.ts propagates here automatically.
+const visibilitySchema = z.enum([...VISIBILITIES] as [
+  Visibility,
+  ...Visibility[],
+])
 
 export const createCollectionSchema = z.object({
   title: titleSchema,

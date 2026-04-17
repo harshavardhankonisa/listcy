@@ -2,16 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { VISIBILITIES } from '@/constants/list'
+import { VISIBILITIES, LIST_TYPES } from '@/constants/list'
 import type { ListType, Visibility } from '@/constants/list'
-
-const LIST_TYPES: ListType[] = [
-  'ranked',
-  'resources',
-  'checklist',
-  'watchlist',
-  'general',
-]
 
 type Props = {
   slug: string
