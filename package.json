@@ -1,6 +1,6 @@
 {
   "name": "listcy",
-  "description": "Listcy is a platform where you can create, discover, and share useful lists",
+  "description": "Listcy is a platform where you can create, discover, and share lists",
   "version": "0.1.0",
   "private": true,
   "scripts": {
