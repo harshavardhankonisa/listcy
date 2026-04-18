@@ -1,0 +1,22 @@
+# Copy this file to terraform.tfvars and fill in your values.
+# terraform.tfvars is gitignored — never commit real credentials.
+
+app_name    = "listcy"
+environment = "production"
+region      = "us-east-1"
+
+github_org  = "your-github-org"
+github_repo = "listcy"
+
+domain         = "listcy.com"
+ses_from_email = "noreply@listcy.com"
+
+# RDS
+db_instance_class = "db.t3.micro"
+db_name           = "listcydb"
+db_username       = "listcy"
+db_password       = "REPLACE_WITH_STRONG_PASSWORD"
+
+# ECS Fargate task resources
+ecs_cpu    = 512
+ecs_memory = 1024

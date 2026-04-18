@@ -40,3 +40,11 @@ infra/env/.env.production
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# terraform
+infra/terraform/.terraform/
+infra/terraform/*.tfstate
+infra/terraform/*.tfstate.backup
+infra/terraform/*.tfvars
+infra/terraform/crash.log
+infra/terraform/override.tf

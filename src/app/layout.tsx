@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
+import Script from 'next/script'
 import { ThemeProvider } from '@/client/components/providers/ThemeProvider'
 import './globals.css'
 
@@ -48,11 +49,9 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <head>
-        {/* Raw inline script — Server Component renders this straight to HTML,
-            so it lands at the top of <head> before any CSS or font tags that
-            Next.js injects. The browser executes it synchronously before the
-            first paint, setting the correct class before any pixels appear. */}
-        <script
+        <Script
+          id="theme-init"
+          strategy="beforeInteractive"
           dangerouslySetInnerHTML={{
             __html: `(function(){try{var t=localStorage.getItem('listcy-theme');if(t==='dark'||(t!=='light'&&matchMedia('(prefers-color-scheme:dark)').matches)){document.documentElement.classList.add('dark')}}catch(e){}})()`,
           }}

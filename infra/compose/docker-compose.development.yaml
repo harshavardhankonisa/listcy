@@ -18,6 +18,23 @@ services:
       timeout: 5s
       retries: 5
 
+  localstack:
+    image: localstack/localstack:3
+    container_name: listcy-localstack
+    ports:
+      - '4566:4566'
+    env_file:
+      - ../env/.env.localstack
+    volumes:
+      - listcy_localstack_data:/var/lib/localstack
+      - ../localstack/init:/etc/localstack/init/ready.d
+      - /var/run/docker.sock:/var/run/docker.sock
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:4566/_localstack/health']
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
   app:
     container_name: listcy-main
     build:
@@ -33,6 +50,8 @@ services:
       - ../env/.env.development
     depends_on:
       postgres:
+        condition: service_healthy
+      localstack:
         condition: service_healthy
 
   studio:
@@ -54,3 +73,4 @@ services:
 
 volumes:
   listcy_pgdata:
+  listcy_localstack_data:
