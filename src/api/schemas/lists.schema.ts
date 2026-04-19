@@ -36,8 +36,12 @@ export const list = pgTable(
       .notNull(),
   },
   (table) => [
-    index('list_userId_idx').on(table.userId),
-    index('list_visibility_idx').on(table.visibility),
+    index('list_userId_visibility_idx').on(table.userId, table.visibility),
+    index('list_visibility_createdAt_idx').on(
+      table.visibility,
+      table.createdAt
+    ),
+    index('list_type_visibility_idx').on(table.type, table.visibility),
     uniqueIndex('list_slug_idx').on(table.slug),
   ]
 )

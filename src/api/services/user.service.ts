@@ -48,8 +48,6 @@ export async function upsertProfile(
     displayName?: string | null
     bio?: string | null
     phone?: string | null
-    timezone?: Timezone | null
-    locale?: Locale | null
     avatarUrl?: string | null
   }
 ) {

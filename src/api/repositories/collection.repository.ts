@@ -15,6 +15,24 @@ export async function findById(id: string) {
   return rows[0] ?? null
 }
 
+export async function findBySlug(slug: string) {
+  const rows = await db
+    .select()
+    .from(collection)
+    .where(eq(collection.slug, slug))
+    .limit(1)
+  return rows[0] ?? null
+}
+
+export async function slugExists(slug: string) {
+  const rows = await db
+    .select({ slug: collection.slug })
+    .from(collection)
+    .where(eq(collection.slug, slug))
+    .limit(1)
+  return rows.length > 0
+}
+
 export async function findByUserId(userId: string) {
   return db
     .select()
@@ -61,6 +79,7 @@ export async function findPublic(limit = 20, offset = 0) {
 
 export async function create(data: {
   userId: string
+  slug: string
   title: string
   description?: string | null
   coverImage?: string | null

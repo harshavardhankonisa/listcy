@@ -38,7 +38,7 @@ export const createItemSchema = z.object({
   description: descriptionSchema,
   url: urlSchema,
   imageUrl: urlSchema,
-  position: z.number().int().min(0).default(0),
+  position: z.number().int().min(0).max(499).default(0),
 })
 
 export const updateItemSchema = z

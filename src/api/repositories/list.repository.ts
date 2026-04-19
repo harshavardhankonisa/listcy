@@ -1,6 +1,6 @@
 import 'server-only'
 
-import { eq, desc, and, count, ne, inArray, notInArray } from 'drizzle-orm'
+import { eq, desc, and, count, ne, inArray, notInArray, sql } from 'drizzle-orm'
 import { db } from '@/api/config/db'
 import { list } from '@/api/schemas/lists.schema'
 import { listToTag } from '@/api/schemas/tags.schema'
@@ -34,13 +34,44 @@ export async function findByUserId(userId: string) {
     .orderBy(desc(list.createdAt))
 }
 
+const itemCountExpr = sql<number>`jsonb_array_length(${list.content})`
+
+const gridCols = {
+  id: list.id,
+  slug: list.slug,
+  title: list.title,
+  description: list.description,
+  coverImage: list.coverImage,
+  type: list.type,
+  visibility: list.visibility,
+  userId: list.userId,
+  createdAt: list.createdAt,
+  updatedAt: list.updatedAt,
+  itemCount: itemCountExpr,
+  authorUsername: userProfile.username,
+  authorDisplayName: userProfile.displayName,
+  authorAvatarUrl: userProfile.avatarUrl,
+}
+
 export async function findByUserIdPaginated(
   userId: string,
   limit: number,
   offset: number
 ) {
   return db
-    .select()
+    .select({
+      id: list.id,
+      slug: list.slug,
+      title: list.title,
+      description: list.description,
+      coverImage: list.coverImage,
+      type: list.type,
+      visibility: list.visibility,
+      userId: list.userId,
+      createdAt: list.createdAt,
+      updatedAt: list.updatedAt,
+      itemCount: itemCountExpr,
+    })
     .from(list)
     .where(eq(list.userId, userId))
     .orderBy(desc(list.createdAt))
@@ -64,24 +95,19 @@ export async function countPublicByUserId(userId: string) {
   return rows[0]?.count ?? 0
 }
 
+export async function countTotalItemsByUserId(userId: string) {
+  const rows = await db
+    .select({
+      total: sql<number>`COALESCE(SUM(jsonb_array_length(${list.content})), 0)`,
+    })
+    .from(list)
+    .where(eq(list.userId, userId))
+  return rows[0]?.total ?? 0
+}
+
 export async function findPublic(limit = 20, offset = 0) {
   return db
-    .select({
-      id: list.id,
-      slug: list.slug,
-      title: list.title,
-      description: list.description,
-      coverImage: list.coverImage,
-      type: list.type,
-      visibility: list.visibility,
-      userId: list.userId,
-      content: list.content,
-      createdAt: list.createdAt,
-      updatedAt: list.updatedAt,
-      authorUsername: userProfile.username,
-      authorDisplayName: userProfile.displayName,
-      authorAvatarUrl: userProfile.avatarUrl,
-    })
+    .select(gridCols)
     .from(list)
     .leftJoin(userProfile, eq(list.userId, userProfile.userId))
     .where(eq(list.visibility, 'public'))
@@ -96,7 +122,19 @@ export async function findPublicByUserId(
   offset = 0
 ) {
   return db
-    .select()
+    .select({
+      id: list.id,
+      slug: list.slug,
+      title: list.title,
+      description: list.description,
+      coverImage: list.coverImage,
+      type: list.type,
+      visibility: list.visibility,
+      userId: list.userId,
+      createdAt: list.createdAt,
+      updatedAt: list.updatedAt,
+      itemCount: itemCountExpr,
+    })
     .from(list)
     .where(and(eq(list.userId, userId), eq(list.visibility, 'public')))
     .orderBy(desc(list.createdAt))
@@ -172,22 +210,7 @@ export async function findRelated(
 ) {
   if (tagIds.length > 0) {
     const byTags = await db
-      .selectDistinct({
-        id: list.id,
-        slug: list.slug,
-        title: list.title,
-        description: list.description,
-        coverImage: list.coverImage,
-        type: list.type,
-        visibility: list.visibility,
-        userId: list.userId,
-        content: list.content,
-        createdAt: list.createdAt,
-        updatedAt: list.updatedAt,
-        authorUsername: userProfile.username,
-        authorDisplayName: userProfile.displayName,
-        authorAvatarUrl: userProfile.avatarUrl,
-      })
+      .selectDistinct(gridCols)
       .from(list)
       .innerJoin(listToTag, eq(list.id, listToTag.listId))
       .leftJoin(userProfile, eq(list.userId, userProfile.userId))
@@ -205,22 +228,7 @@ export async function findRelated(
 
     const existingIds = [listId, ...byTags.map((l) => l.id)]
     const byType = await db
-      .select({
-        id: list.id,
-        slug: list.slug,
-        title: list.title,
-        description: list.description,
-        coverImage: list.coverImage,
-        type: list.type,
-        visibility: list.visibility,
-        userId: list.userId,
-        content: list.content,
-        createdAt: list.createdAt,
-        updatedAt: list.updatedAt,
-        authorUsername: userProfile.username,
-        authorDisplayName: userProfile.displayName,
-        authorAvatarUrl: userProfile.avatarUrl,
-      })
+      .select(gridCols)
       .from(list)
       .leftJoin(userProfile, eq(list.userId, userProfile.userId))
       .where(
@@ -237,22 +245,7 @@ export async function findRelated(
   }
 
   return db
-    .select({
-      id: list.id,
-      slug: list.slug,
-      title: list.title,
-      description: list.description,
-      coverImage: list.coverImage,
-      type: list.type,
-      visibility: list.visibility,
-      userId: list.userId,
-      content: list.content,
-      createdAt: list.createdAt,
-      updatedAt: list.updatedAt,
-      authorUsername: userProfile.username,
-      authorDisplayName: userProfile.displayName,
-      authorAvatarUrl: userProfile.avatarUrl,
-    })
+    .select(gridCols)
     .from(list)
     .leftJoin(userProfile, eq(list.userId, userProfile.userId))
     .where(

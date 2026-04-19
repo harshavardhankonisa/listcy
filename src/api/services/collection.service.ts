@@ -3,6 +3,7 @@ import 'server-only'
 import * as collectionRepo from '@/api/repositories/collection.repository'
 import * as listRepo from '@/api/repositories/list.repository'
 import * as tagRepo from '@/api/repositories/tag.repository'
+import { generateUniqueSlug } from '@/api/utils/slug'
 import type { Visibility } from '@/common/enums/list'
 
 export async function getCollectionById(
@@ -52,7 +53,12 @@ export async function createCollection(
   }
 ) {
   const { tags: tagNames, ...collectionData } = data
-  const created = await collectionRepo.create({ userId, ...collectionData })
+  const slug = await generateUniqueSlug(data.title, collectionRepo.slugExists)
+  const created = await collectionRepo.create({
+    userId,
+    slug,
+    ...collectionData,
+  })
 
   if (tagNames && tagNames.length > 0) {
     const resolvedTags = await Promise.all(

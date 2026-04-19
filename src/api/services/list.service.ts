@@ -29,7 +29,6 @@ async function enrichList(
       ? await tagRepo.findByIds(tagRows.map((r) => r.tagId))
       : []
 
-  // content is already on the list row — no separate fetch needed
   const items = (found.content ?? [])
     .slice()
     .sort((a, b) => a.position - b.position)
@@ -38,12 +37,11 @@ async function enrichList(
 }
 
 export async function getDashboardStats(userId: string) {
-  const [lists, publicLists] = await Promise.all([
-    listRepo.findByUserId(userId),
+  const [totalLists, publicLists, totalItems] = await Promise.all([
+    listRepo.countByUserId(userId),
     listRepo.countPublicByUserId(userId),
+    listRepo.countTotalItemsByUserId(userId),
   ])
-  const totalLists = lists.length
-  const totalItems = lists.reduce((sum, l) => sum + (l.content?.length ?? 0), 0)
   return {
     totalLists,
     totalItems,
@@ -65,15 +63,11 @@ export async function getListsByUserIdPaginated(
     listRepo.findByUserIdPaginated(userId, limit, offset),
     listRepo.countByUserId(userId),
   ])
-  return {
-    lists: lists.map((l) => ({ ...l, itemCount: l.content?.length ?? 0 })),
-    total,
-  }
+  return { lists, total }
 }
 
 export async function getPublicLists(limit = 20, offset = 0) {
-  const lists = await listRepo.findPublic(limit, offset)
-  return lists.map((l) => ({ ...l, itemCount: l.content?.length ?? 0 }))
+  return listRepo.findPublic(limit, offset)
 }
 
 export async function getPublicListsByUserId(
@@ -81,8 +75,7 @@ export async function getPublicListsByUserId(
   limit = 20,
   offset = 0
 ) {
-  const lists = await listRepo.findPublicByUserId(userId, limit, offset)
-  return lists.map((l) => ({ ...l, itemCount: l.content?.length ?? 0 }))
+  return listRepo.findPublicByUserId(userId, limit, offset)
 }
 
 export async function createList(
@@ -161,6 +154,8 @@ export async function deleteList(id: string, userId: string) {
   return listRepo.remove(id, userId)
 }
 
+const MAX_ITEMS_PER_LIST = 500
+
 export async function addItem(
   listId: string,
   userId: string,
@@ -176,6 +171,8 @@ export async function addItem(
   if (!found || found.userId !== userId) return null
 
   const existing = found.content ?? []
+  if (existing.length >= MAX_ITEMS_PER_LIST) return null
+
   const newItem: ListItemContent = {
     id: crypto.randomUUID(),
     title: data.title,
@@ -252,6 +249,5 @@ export async function getRelatedLists(
 ) {
   const listTags = await listRepo.findTagsByListId(listId)
   const tagIds = listTags.map((t) => t.tagId)
-  const related = await listRepo.findRelated(listId, type, tagIds, limit)
-  return related.map((l) => ({ ...l, itemCount: l.content?.length ?? 0 }))
+  return listRepo.findRelated(listId, type, tagIds, limit)
 }

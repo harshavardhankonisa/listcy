@@ -6,6 +6,7 @@ import {
   integer,
   index,
   primaryKey,
+  uniqueIndex,
 } from 'drizzle-orm/pg-core'
 import { user } from './auth.schema'
 import { list } from './lists.schema'
@@ -19,6 +20,7 @@ export const collection = pgTable(
     userId: text('user_id')
       .notNull()
       .references(() => user.id, { onDelete: 'cascade' }),
+    slug: text('slug').notNull(),
     title: text('title').notNull(),
     description: text('description'),
     coverImage: text('cover_image'),
@@ -33,8 +35,11 @@ export const collection = pgTable(
       .notNull(),
   },
   (table) => [
-    index('collection_userId_idx').on(table.userId),
-    index('collection_visibility_idx').on(table.visibility),
+    index('collection_userId_visibility_idx').on(
+      table.userId,
+      table.visibility
+    ),
+    uniqueIndex('collection_slug_idx').on(table.slug),
   ]
 )
 

@@ -13,8 +13,8 @@ export type ListType = (typeof LIST_TYPES)[number]
 export type ListItemContent = {
   id: string
   title: string
-  description?: string | null
-  url?: string | null
-  imageUrl?: string | null
+  description: string | null
+  url: string | null
+  imageUrl: string | null
   position: number
 }

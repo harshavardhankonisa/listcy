@@ -9,16 +9,12 @@ import {
 import { list } from './lists.schema'
 import { collection } from './collections.schema'
 
-export const tag = pgTable(
-  'tag',
-  {
-    id: text('id').primaryKey(),
-    name: text('name').notNull().unique(),
-    slug: text('slug').notNull().unique(),
-    createdAt: timestamp('created_at').defaultNow().notNull(),
-  },
-  (table) => [index('tag_slug_idx').on(table.slug)]
-)
+export const tag = pgTable('tag', {
+  id: text('id').primaryKey(),
+  name: text('name').notNull().unique(),
+  slug: text('slug').notNull().unique(),
+  createdAt: timestamp('created_at').defaultNow().notNull(),
+})
 
 export const tagRelations = relations(tag, ({ many }) => ({
   lists: many(listToTag),
