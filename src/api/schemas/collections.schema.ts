@@ -10,7 +10,7 @@ import {
 import { user } from './auth.schema'
 import { list } from './lists.schema'
 import { collectionToTag } from './tags.schema'
-import type { Visibility } from '@/common/constants/list'
+import type { Visibility } from '@/common/enums/list'
 
 export const collection = pgTable(
   'collection',

@@ -1,8 +1,8 @@
 import 'server-only'
 
 import { z } from 'zod'
-import { THEMES, LOCALES, TIMEZONES } from '@/common/constants/user'
-import type { Theme, Locale, Timezone } from '@/common/constants/user'
+import { THEMES, LOCALES, TIMEZONES } from '@/common/enums/user'
+import type { Theme, Locale, Timezone } from '@/common/enums/user'
 import { stripHtml } from './text'
 
 const themeSchema = z.enum([...THEMES] as [Theme, ...Theme[]])

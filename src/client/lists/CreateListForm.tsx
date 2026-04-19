@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { VISIBILITIES } from '@/common/constants/list'
-import type { ListType, Visibility } from '@/common/constants/list'
+import { VISIBILITIES } from '@/common/enums/list'
+import type { ListType, Visibility } from '@/common/enums/list'
 
 const TYPE_META: Record<
   ListType,

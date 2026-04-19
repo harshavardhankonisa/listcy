@@ -25,8 +25,19 @@ export const descriptionSchema = z
   .transform(stripHtml)
   .nullish()
 
-/** Absolute URL, optional, nullable */
-export const urlSchema = z.url().nullish()
+/** Absolute URL, optional, nullable.
+ *  - empty string / null / undefined → null (field is optional)
+ *  - string without protocol → https:// is prepended automatically
+ *  - invalid URL after normalisation → Zod rejects it
+ */
+export const urlSchema = z.preprocess((v) => {
+  if (v == null || v === '') return null
+  if (typeof v !== 'string') return v
+  const trimmed = v.trim()
+  if (!trimmed) return null
+  if (!/^https?:\/\//i.test(trimmed)) return `https://${trimmed}`
+  return trimmed
+}, z.url().nullable().optional())
 
 /** Tag name — lowercase alphanumeric + hyphens, max 50 chars */
 export const tagNameSchema = z.string().min(1).max(50).trim().toLowerCase()

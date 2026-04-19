@@ -4,7 +4,7 @@ import Image from 'next/image'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import { useState } from 'react'
-import type { ListType } from '@/common/constants/list'
+import type { ListType } from '@/common/enums/list'
 
 const TYPE_LABELS: Record<ListType, string> = {
   ranked: 'Ranked',

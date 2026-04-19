@@ -164,6 +164,7 @@ export async function addItemBySlug(
 
 export async function updateItem(
   request: Request,
+  slug: string,
   itemId: string
 ): ApiResponse {
   return res.withController(async () => {
@@ -173,6 +174,9 @@ export async function updateItem(
     const rl = await rateLimit(session.user.id, RATE_LIMITS.write)
     if (!rl.allowed) return res.tooManyRequests(rl)
 
+    const found = await listService.getListBySlug(slug, session.user.id)
+    if (!found) return res.notFound('List not found')
+
     const body = await res.parseBody(request)
     if (!body.ok) return body.response
 
@@ -181,6 +185,7 @@ export async function updateItem(
       return res.badRequest('Validation failed', z.flattenError(parsed.error))
 
     const item = await listService.updateItem(
+      found.id,
       itemId,
       session.user.id,
       parsed.data
@@ -193,6 +198,7 @@ export async function updateItem(
 
 export async function deleteItem(
   _request: Request,
+  slug: string,
   itemId: string
 ): ApiResponse {
   return res.withController(async () => {
@@ -202,7 +208,14 @@ export async function deleteItem(
     const rl = await rateLimit(session.user.id, RATE_LIMITS.write)
     if (!rl.allowed) return res.tooManyRequests(rl)
 
-    const deleted = await listService.deleteItem(itemId, session.user.id)
+    const found = await listService.getListBySlug(slug, session.user.id)
+    if (!found) return res.notFound('List not found')
+
+    const deleted = await listService.deleteItem(
+      found.id,
+      itemId,
+      session.user.id
+    )
 
     if (!deleted) return res.notFound('Item not found')
     return res.ok({ success: true })

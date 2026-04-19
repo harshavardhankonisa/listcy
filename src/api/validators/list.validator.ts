@@ -1,8 +1,8 @@
 import 'server-only'
 
 import { z } from 'zod'
-import { VISIBILITIES, LIST_TYPES } from '@/common/constants/list'
-import type { Visibility, ListType } from '@/common/constants/list'
+import { VISIBILITIES, LIST_TYPES } from '@/common/enums/list'
+import type { Visibility, ListType } from '@/common/enums/list'
 import { titleSchema, descriptionSchema, urlSchema, tagsSchema } from './text'
 
 const visibilitySchema = z.enum([...VISIBILITIES] as [

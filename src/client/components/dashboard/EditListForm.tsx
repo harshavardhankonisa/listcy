@@ -2,8 +2,8 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { VISIBILITIES, LIST_TYPES } from '@/common/constants/list'
-import type { ListType, Visibility } from '@/common/constants/list'
+import { VISIBILITIES, LIST_TYPES } from '@/common/enums/list'
+import type { ListType, Visibility } from '@/common/enums/list'
 
 type Props = {
   slug: string

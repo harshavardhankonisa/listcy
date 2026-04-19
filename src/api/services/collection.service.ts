@@ -3,7 +3,7 @@ import 'server-only'
 import * as collectionRepo from '@/api/repositories/collection.repository'
 import * as listRepo from '@/api/repositories/list.repository'
 import * as tagRepo from '@/api/repositories/tag.repository'
-import type { Visibility } from '@/common/constants/list'
+import type { Visibility } from '@/common/enums/list'
 
 export async function getCollectionById(
   id: string,

@@ -2,7 +2,7 @@ import { headers } from 'next/headers'
 import Link from 'next/link'
 import { auth } from '@/api/config/auth'
 import * as listService from '@/api/services/list.service'
-import type { ListType } from '@/common/constants/list'
+import type { ListType } from '@/common/enums/list'
 
 const TYPE_LABELS: Record<ListType, string> = {
   ranked: 'Ranked',

@@ -9,7 +9,7 @@ import * as userService from '@/api/services/user.service'
 import { AppShell } from '@/client/components/layout/AppShell'
 import { ListActionBar } from '@/client/components/common/ListActionBar'
 import { FollowButton } from '@/client/components/common/FollowButton'
-import type { ListType } from '@/common/constants/list'
+import type { ListType } from '@/common/enums/list'
 
 type Props = { params: Promise<{ slug: string }> }
 

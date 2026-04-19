@@ -3,7 +3,7 @@ import 'server-only'
 import * as listRepo from '@/api/repositories/list.repository'
 import * as tagRepo from '@/api/repositories/tag.repository'
 import { generateUniqueSlug } from '@/api/utils/slug'
-import type { Visibility, ListType } from '@/common/constants/list'
+import type { Visibility, ListType, ListItemContent } from '@/common/enums/list'
 
 export async function getListById(id: string, requesterId?: string | null) {
   const found = await listRepo.findById(id)
@@ -23,24 +23,27 @@ async function enrichList(
     return null
   }
 
-  const [items, tagRows] = await Promise.all([
-    listRepo.findItemsByListId(found.id),
-    listRepo.findTagsByListId(found.id),
-  ])
+  const tagRows = await listRepo.findTagsByListId(found.id)
   const tags =
     tagRows.length > 0
       ? await tagRepo.findByIds(tagRows.map((r) => r.tagId))
       : []
 
+  // content is already on the list row — no separate fetch needed
+  const items = (found.content ?? [])
+    .slice()
+    .sort((a, b) => a.position - b.position)
+
   return { ...found, items, tags }
 }
 
 export async function getDashboardStats(userId: string) {
-  const [totalLists, totalItems, publicLists] = await Promise.all([
-    listRepo.countByUserId(userId),
-    listRepo.countItemsByUserId(userId),
+  const [lists, publicLists] = await Promise.all([
+    listRepo.findByUserId(userId),
     listRepo.countPublicByUserId(userId),
   ])
+  const totalLists = lists.length
+  const totalItems = lists.reduce((sum, l) => sum + (l.content?.length ?? 0), 0)
   return {
     totalLists,
     totalItems,
@@ -62,19 +65,15 @@ export async function getListsByUserIdPaginated(
     listRepo.findByUserIdPaginated(userId, limit, offset),
     listRepo.countByUserId(userId),
   ])
-  const ids = lists.map((l) => l.id)
-  const itemCounts = await listRepo.itemCountsByListIds(ids)
   return {
-    lists: lists.map((l) => ({ ...l, itemCount: itemCounts[l.id] ?? 0 })),
+    lists: lists.map((l) => ({ ...l, itemCount: l.content?.length ?? 0 })),
     total,
   }
 }
 
 export async function getPublicLists(limit = 20, offset = 0) {
   const lists = await listRepo.findPublic(limit, offset)
-  const ids = lists.map((l) => l.id)
-  const itemCounts = await listRepo.itemCountsByListIds(ids)
-  return lists.map((l) => ({ ...l, itemCount: itemCounts[l.id] ?? 0 }))
+  return lists.map((l) => ({ ...l, itemCount: l.content?.length ?? 0 }))
 }
 
 export async function getPublicListsByUserId(
@@ -83,9 +82,7 @@ export async function getPublicListsByUserId(
   offset = 0
 ) {
   const lists = await listRepo.findPublicByUserId(userId, limit, offset)
-  const ids = lists.map((l) => l.id)
-  const itemCounts = await listRepo.itemCountsByListIds(ids)
-  return lists.map((l) => ({ ...l, itemCount: itemCounts[l.id] ?? 0 }))
+  return lists.map((l) => ({ ...l, itemCount: l.content?.length ?? 0 }))
 }
 
 export async function createList(
@@ -97,6 +94,7 @@ export async function createList(
     visibility?: Visibility
     type?: ListType
     tags?: string[]
+    content?: ListItemContent[]
   }
 ) {
   const { tags: tagNames, ...listData } = data
@@ -126,6 +124,7 @@ export async function updateList(
     visibility: Visibility
     type: ListType
     tags: string[]
+    content: ListItemContent[]
   }>
 ) {
   const { tags: tagNames, ...fields } = data
@@ -176,10 +175,23 @@ export async function addItem(
   const found = await listRepo.findById(listId)
   if (!found || found.userId !== userId) return null
 
-  return listRepo.addItem({ listId, ...data })
+  const existing = found.content ?? []
+  const newItem: ListItemContent = {
+    id: crypto.randomUUID(),
+    title: data.title,
+    description: data.description ?? null,
+    url: data.url ?? null,
+    imageUrl: data.imageUrl ?? null,
+    position: data.position ?? existing.length,
+  }
+
+  return listRepo.update(listId, userId, {
+    content: [...existing, newItem],
+  })
 }
 
 export async function updateItem(
+  listId: string,
   itemId: string,
   userId: string,
   data: Partial<{
@@ -190,23 +202,30 @@ export async function updateItem(
     position: number
   }>
 ) {
-  const item = await listRepo.findItemById(itemId)
-  if (!item) return null
+  const found = await listRepo.findById(listId)
+  if (!found || found.userId !== userId) return null
 
-  const parentList = await listRepo.findById(item.listId)
-  if (!parentList || parentList.userId !== userId) return null
+  const content = found.content ?? []
+  const idx = content.findIndex((i) => i.id === itemId)
+  if (idx === -1) return null
 
-  return listRepo.updateItem(itemId, data)
+  const updated = content.map((item, i) =>
+    i === idx ? { ...item, ...data } : item
+  )
+
+  return listRepo.update(listId, userId, { content: updated })
 }
 
-export async function deleteItem(itemId: string, userId: string) {
-  const item = await listRepo.findItemById(itemId)
-  if (!item) return null
+export async function deleteItem(
+  listId: string,
+  itemId: string,
+  userId: string
+) {
+  const found = await listRepo.findById(listId)
+  if (!found || found.userId !== userId) return null
 
-  const parentList = await listRepo.findById(item.listId)
-  if (!parentList || parentList.userId !== userId) return null
-
-  return listRepo.removeItem(itemId)
+  const content = (found.content ?? []).filter((i) => i.id !== itemId)
+  return listRepo.update(listId, userId, { content })
 }
 
 export async function setListTags(
@@ -226,8 +245,6 @@ export async function setListTags(
   )
 }
 
-// Related Lists
-
 export async function getRelatedLists(
   listId: string,
   type: ListType,
@@ -235,10 +252,6 @@ export async function getRelatedLists(
 ) {
   const listTags = await listRepo.findTagsByListId(listId)
   const tagIds = listTags.map((t) => t.tagId)
-
   const related = await listRepo.findRelated(listId, type, tagIds, limit)
-
-  const ids = related.map((l) => l.id)
-  const counts = await listRepo.itemCountsByListIds(ids)
-  return related.map((l) => ({ ...l, itemCount: counts[l.id] ?? 0 }))
+  return related.map((l) => ({ ...l, itemCount: l.content?.length ?? 0 }))
 }

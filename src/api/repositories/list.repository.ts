@@ -2,10 +2,10 @@ import 'server-only'
 
 import { eq, desc, and, count, ne, inArray, notInArray } from 'drizzle-orm'
 import { db } from '@/api/config/db'
-import { list, listItem } from '@/api/schemas/lists.schema'
+import { list } from '@/api/schemas/lists.schema'
 import { listToTag } from '@/api/schemas/tags.schema'
 import { userProfile } from '@/api/schemas/users.schema'
-import type { Visibility, ListType } from '@/common/constants/list'
+import type { Visibility, ListType, ListItemContent } from '@/common/enums/list'
 
 export async function findById(id: string) {
   const rows = await db.select().from(list).where(eq(list.id, id)).limit(1)
@@ -64,15 +64,6 @@ export async function countPublicByUserId(userId: string) {
   return rows[0]?.count ?? 0
 }
 
-export async function countItemsByUserId(userId: string) {
-  const rows = await db
-    .select({ count: count() })
-    .from(listItem)
-    .innerJoin(list, eq(listItem.listId, list.id))
-    .where(eq(list.userId, userId))
-  return rows[0]?.count ?? 0
-}
-
 export async function findPublic(limit = 20, offset = 0) {
   return db
     .select({
@@ -84,6 +75,7 @@ export async function findPublic(limit = 20, offset = 0) {
       type: list.type,
       visibility: list.visibility,
       userId: list.userId,
+      content: list.content,
       createdAt: list.createdAt,
       updatedAt: list.updatedAt,
       authorUsername: userProfile.username,
@@ -120,6 +112,7 @@ export async function create(data: {
   coverImage?: string | null
   visibility?: Visibility
   type?: ListType
+  content?: ListItemContent[]
 }) {
   const id = crypto.randomUUID()
   const rows = await db
@@ -127,22 +120,6 @@ export async function create(data: {
     .values({ id, ...data })
     .returning()
   return rows[0]
-}
-
-export async function itemCountsByListIds(listIds: string[]) {
-  if (listIds.length === 0) return {}
-  const rows = await db
-    .select({
-      listId: listItem.listId,
-      count: count(),
-    })
-    .from(listItem)
-    // inArray generates a safe parameterized IN clause; raw sql`IN` is not type-safe
-    .where(inArray(listItem.listId, listIds))
-    .groupBy(listItem.listId)
-  const map: Record<string, number> = {}
-  for (const r of rows) map[r.listId] = r.count
-  return map
 }
 
 export async function update(
@@ -155,6 +132,7 @@ export async function update(
     coverImage: string | null
     visibility: Visibility
     type: ListType
+    content: ListItemContent[]
   }>
 ) {
   const rows = await db
@@ -170,62 +148,6 @@ export async function remove(id: string, userId: string) {
     .delete(list)
     .where(and(eq(list.id, id), eq(list.userId, userId)))
     .returning()
-  return rows[0] ?? null
-}
-
-export async function findItemById(id: string) {
-  const rows = await db
-    .select()
-    .from(listItem)
-    .where(eq(listItem.id, id))
-    .limit(1)
-  return rows[0] ?? null
-}
-
-export async function findItemsByListId(listId: string) {
-  return db
-    .select()
-    .from(listItem)
-    .where(eq(listItem.listId, listId))
-    .orderBy(listItem.position)
-}
-
-export async function addItem(data: {
-  listId: string
-  title: string
-  description?: string | null
-  url?: string | null
-  imageUrl?: string | null
-  position?: number
-}) {
-  const id = crypto.randomUUID()
-  const rows = await db
-    .insert(listItem)
-    .values({ id, ...data })
-    .returning()
-  return rows[0]
-}
-
-export async function updateItem(
-  id: string,
-  data: Partial<{
-    title: string
-    description: string | null
-    url: string | null
-    imageUrl: string | null
-    position: number
-  }>
-) {
-  const rows = await db
-    .update(listItem)
-    .set(data)
-    .where(eq(listItem.id, id))
-    .returning()
-  return rows[0] ?? null
-}
-
-export async function removeItem(id: string) {
-  const rows = await db.delete(listItem).where(eq(listItem.id, id)).returning()
   return rows[0] ?? null
 }
 
@@ -259,6 +181,7 @@ export async function findRelated(
         type: list.type,
         visibility: list.visibility,
         userId: list.userId,
+        content: list.content,
         createdAt: list.createdAt,
         updatedAt: list.updatedAt,
         authorUsername: userProfile.username,
@@ -291,6 +214,7 @@ export async function findRelated(
         type: list.type,
         visibility: list.visibility,
         userId: list.userId,
+        content: list.content,
         createdAt: list.createdAt,
         updatedAt: list.updatedAt,
         authorUsername: userProfile.username,
@@ -303,7 +227,6 @@ export async function findRelated(
         and(
           eq(list.visibility, 'public'),
           eq(list.type, type),
-          // notInArray generates a safe parameterized NOT IN clause
           notInArray(list.id, existingIds)
         )
       )
@@ -323,6 +246,7 @@ export async function findRelated(
       type: list.type,
       visibility: list.visibility,
       userId: list.userId,
+      content: list.content,
       createdAt: list.createdAt,
       updatedAt: list.updatedAt,
       authorUsername: userProfile.username,

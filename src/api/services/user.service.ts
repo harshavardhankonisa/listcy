@@ -4,7 +4,7 @@ import * as userRepo from '@/api/repositories/user.repository'
 import * as listRepo from '@/api/repositories/list.repository'
 import * as collectionRepo from '@/api/repositories/collection.repository'
 import { generateUniqueSlug, usernameFromEmail } from '@/api/utils/slug'
-import type { Theme, Locale, Timezone } from '@/common/constants/user'
+import type { Theme, Locale, Timezone } from '@/common/enums/user'
 
 // Profile
 

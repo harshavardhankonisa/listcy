@@ -3,11 +3,12 @@ import 'server-only'
 import * as listRepo from '@/api/repositories/list.repository'
 
 export async function getStats(userId: string) {
-  const [totalLists, publicLists, totalItems] = await Promise.all([
-    listRepo.countByUserId(userId),
+  const [lists, publicLists] = await Promise.all([
+    listRepo.findByUserId(userId),
     listRepo.countPublicByUserId(userId),
-    listRepo.countItemsByUserId(userId),
   ])
+  const totalLists = lists.length
+  const totalItems = lists.reduce((sum, l) => sum + (l.content?.length ?? 0), 0)
   return {
     totalLists,
     publicLists,
