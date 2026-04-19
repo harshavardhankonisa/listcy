@@ -18,6 +18,7 @@ env:
 
 jobs:
   deploy:
+    if: false
     name: Build & deploy
     runs-on: ubuntu-latest
 
